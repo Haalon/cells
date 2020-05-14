@@ -210,6 +210,7 @@ function resizeCanvasToDisplaySize(canvas, multiplier) {
 }
 
 var mousePressed = null;
+var lastPos = null;
 var enabled = true;
 var help = true;
 
@@ -228,6 +229,7 @@ function main() {
   canvas.addEventListener('mousedown', (event) => {
     mousePressed = event.which
     var pos = getMousePos(canvas, event);
+    lastPos = pos;
     // console.log("pressed", mousePressed, pos, canvas, event, )
     ca.poke(pos[0], pos[1], mousePressed == 1);
     ca.draw();
@@ -240,8 +242,17 @@ function main() {
   canvas.addEventListener('mousemove', (event) => {
     if(mousePressed) {
       var pos = getMousePos(canvas, event);
-      // console.log("moved to ", pos)
-      ca.poke(pos[0], pos[1], mousePressed == 1);
+      var diag_dist = Math.max(Math.abs(pos[0]-lastPos[0]), Math.abs(pos[1]-lastPos[1]))
+      for (var step = 0; step <= diag_dist; step++) {
+        var t = diag_dist == 0? 0.0 : step / diag_dist;
+        var point = [
+          lastPos[0] + t * (pos[0] - lastPos[0]),
+          lastPos[1] + t * (pos[1] - lastPos[1]),
+        ]
+        ca.poke(point[0], point[1], mousePressed == 1);
+      }
+      lastPos = pos;
+      // console.log("moved to ", pos)      
       ca.draw();
     }});
 
