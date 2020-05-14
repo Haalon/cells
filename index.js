@@ -80,7 +80,7 @@ function CA(canvas, scale) {
 
   this.frameBuffer = igloo.framebuffer();
 
-  this.startTime = Date.now()
+  this.lastTime = Date.now()
 
   this.setRandom();
 }
@@ -119,7 +119,8 @@ CA.prototype.draw = function() {
     // .uniform('u_time', (Date.now() - this.startTime) / 1000.0)
     .uniform('scale', this.viewsize)
     .draw(gl.TRIANGLE_STRIP, 4);
-    return this;
+  this.lastTime = Date.now();
+  return this;
 };
 
 CA.prototype.set = function(state) {
@@ -161,7 +162,12 @@ function main() {
   // Initialize the GL context
   var ca = new CA(canvas, 1)
   console.log(ca)
-  setInterval(() => {ca.step(); ca.draw();}, 10);
+  setInterval(() => {
+    console.log(`Drawn and calculated ${(Date.now() - ca.lastTime)} mseconds`)
+    ca.step(); 
+    ca.draw();
+    
+  }, 10);
 }
 
 window.onload = main;
