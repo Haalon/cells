@@ -9,11 +9,11 @@ void main() {
 var fShow = `
 precision mediump float;
 uniform sampler2D state;
-uniform vec2 scale;
+uniform vec2 screenSize;
 uniform float u_time;
 
 void main() {
-    gl_FragColor = texture2D(state, gl_FragCoord.xy / scale);
+    gl_FragColor = texture2D(state, gl_FragCoord.xy / screenSize);
 }
 `
 
@@ -22,10 +22,10 @@ var fStep = `
 precision mediump float;
 
 uniform sampler2D state;
-uniform vec2 scale;
+uniform vec2 screenSize;
 
 int get(vec2 offset) {
-    return int(texture2D(state, (gl_FragCoord.xy + offset) / scale).r);
+    return int(texture2D(state, (gl_FragCoord.xy + offset) / screenSize).r);
 }
 
 void main() {
@@ -66,7 +66,8 @@ function CA(canvas, scale) {
   var w = canvas.clientWidth, h = canvas.clientHeight;
   this.scale = scale;
   this.viewsize = new Float32Array([w, h]);
-  this.statesize = new Float32Array([w / scale, h / scale]);
+  console.log(w,h);
+  this.statesize = new Float32Array([1024, 1024]);
 
   gl.disable(gl.DEPTH_TEST);
 
@@ -104,7 +105,7 @@ CA.prototype.step = function() {
     .attrib('a_position', this.buffer, 2)
     // .uniform('u_time', (Date.now() - this.startTime) / 1000.0)
     .uniformi('state', 0)
-    .uniform('scale', this.statesize)
+    .uniform('screenSize', this.statesize)
     .draw(gl.TRIANGLE_STRIP, 4);
   this.swap();
   return this
@@ -119,7 +120,7 @@ CA.prototype.draw = function() {
     .attrib('a_position', this.buffer, 2)
     .uniformi('state', 0)
     // .uniform('u_time', (Date.now() - this.startTime) / 1000.0)
-    .uniform('scale', this.viewsize)
+    .uniform('screenSize', this.statesize)
     .draw(gl.TRIANGLE_STRIP, 4);
   this.lastTime = Date.now();
   return this;
@@ -156,6 +157,18 @@ function getMousePos(canvas, event) {
   };
 }
 
+function resizeCanvasToDisplaySize(canvas, multiplier) {
+  multiplier = multiplier || 1;
+  const width  = canvas.clientWidth  * multiplier | 0;
+  const height = canvas.clientHeight * multiplier | 0;
+  if (canvas.width !== width ||  canvas.height !== height) {
+    canvas.width  = width;
+    canvas.height = height;
+    return true;
+  }
+  return false;
+}
+
 function main() {
   var canvas = document.querySelector("#glCanvas");
   // canvas.addEventListener('mousemove', (event) => {
@@ -164,10 +177,12 @@ function main() {
   // Initialize the GL context
   var ca = new CA(canvas, 1)
   console.log(ca)
+  resizeCanvasToDisplaySize(canvas)
   setInterval(() => {
-    console.log(`Drawn and calculated ${(Date.now() - ca.lastTime)} mseconds`)
+    // console.log(`Drawn and calculated ${(Date.now() - ca.lastTime)} mseconds`)
     ca.step(); 
     ca.draw();
+
     
   }, 10);
 }

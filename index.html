@@ -6,13 +6,15 @@
     <script src="lib/igloo.js"></script>
     <script src="index.js"></script>
     <style>
-      body { margin: 10px auto; width: 1024px; }
-      canvas { display: block; }
+      body { margin: 0px; height: 100%; width: 100%;  }
+      div { margin: 0px; height: 100%; width: 100%;  }
+      canvas { display: block;  height: 100% ; width: 100%; margin: 0px; }
     </style>
   </head>
   <body>
-    <h1>WebGL Cellular Automatons</h1>
     <!-- Canvas dimensions must be powers of two. -->
-    <canvas id="glCanvas" width="1024" height="512"></canvas>
+    <div>
+      <canvas id="glCanvas"></canvas>
+    </div>    
   </body>
 </html>
