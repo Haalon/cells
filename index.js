@@ -245,6 +245,11 @@ function main() {
       ca.draw();
     }});
 
+  canvas.addEventListener('contextmenu', (event) => {
+    event.preventDefault();
+    return false;
+  })
+
   document.addEventListener('keyup', (event) =>{
     switch (event.which) {
       case 27: /* [esc] */
