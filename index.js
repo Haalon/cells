@@ -95,8 +95,8 @@ function CA(canvas, scale) {
   this.viewsize = new Float32Array([w, h]);
   console.log(w,h);
   console.log(canvas.width, canvas.height);
-  this.statesize = new Float32Array([512, 512]);
-  this.scale = 1;
+  this.statesize = new Float32Array([1024, 512]);
+  this.scale = 2;
 
   gl.disable(gl.DEPTH_TEST);
 
@@ -286,7 +286,7 @@ function main() {
       ca.step();
       ca.draw();
     }    
-  }, 5);
+  }, 10);
 }
 
 if (
