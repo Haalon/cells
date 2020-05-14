@@ -67,6 +67,7 @@ function CA(canvas, scale) {
   this.scale = scale;
   this.viewsize = new Float32Array([w, h]);
   console.log(w,h);
+  console.log(canvas.width, canvas.height);
   this.statesize = new Float32Array([1024, 1024]);
 
   gl.disable(gl.DEPTH_TEST);
