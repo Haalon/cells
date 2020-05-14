@@ -6,15 +6,37 @@
     <script src="lib/igloo.js"></script>
     <script src="index.js"></script>
     <style>
-
+      .floatingDiv { 
+        position:absolute;  
+        z-index:10000; 
+        left:33%; 
+        top:250px; 
+        width:33%; 
+        background-color:#FFFA; 
+        min-width: 217px;
+        text-align: center;
+        border-radius: 10px 10px;
+        border:solid;
+        border-width:1px;
+        border-color:#000;
+        vertical-align:top;
+        padding:10px;}
       html {height: 100vh}  /*otherwise it will have a white space at the bottom*/
-      body { margin: 0px; height: 100%;  }
-
-      canvas { display: block;  height: 100% ; width: 100%; margin: 0px; }
+      body { margin: 0px; height: 100%;  overflow: hidden;}
+      canvas { display: block;  height: 1080px ; width: 1920px; margin: 0px; }
     </style>
   </head>
   <body>
     <!-- Canvas dimensions must be powers of two. -->
+      <div class="floatingDiv" id="helpBox"">
+        <h1>CONTROLS</h1>
+
+        [esc]: show / hide help <br>
+        [space]: pause / play <br>
+        [enter]: next step <br>
+        [<--]: reset to random <br>
+        [del]: reset to empty <br>
+      </div>
       <canvas id="glCanvas"></canvas>  
   </body>
 </html>
