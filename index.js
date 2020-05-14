@@ -68,6 +68,8 @@ function CA(canvas, scale) {
   this.viewsize = new Float32Array([w, h]);
   this.statesize = new Float32Array([w / scale, h / scale]);
 
+  gl.disable(gl.DEPTH_TEST);
+
   this.buffer = igloo.array(Igloo.QUAD2)
 
   this.program_step = igloo.program(vShow, fStep);
@@ -170,4 +172,11 @@ function main() {
   }, 10);
 }
 
-window.onload = main;
+if (
+    document.readyState === "complete" ||
+    (document.readyState !== "loading" && !document.documentElement.doScroll)
+) {
+  main();
+} else {
+  document.addEventListener("DOMContentLoaded", main);
+}
