@@ -85,7 +85,6 @@ function CA(canvas, scale) {
   var igloo = this.igloo = new Igloo(canvas);
   var gl = igloo.gl;
 
-    // Only continue if WebGL is available and working
   if (gl === null) {
     alert("Unable to initialize WebGL. Your browser or machine may not support it.");
     return;
@@ -97,7 +96,7 @@ function CA(canvas, scale) {
   console.log(w,h);
   console.log(canvas.width, canvas.height);
   this.statesize = new Float32Array([512, 512]);
-  this.scale = 4;
+  this.scale = 1;
 
   gl.disable(gl.DEPTH_TEST);
 
@@ -179,10 +178,8 @@ CA.prototype.setRandom = function(p) {
 };
 
 CA.prototype.poke = function(x, y, state) {
-  console.log("pre poke ", state," at ", x ,y)
   x = x / this.scale % this.statesize[0]
   y = y / this.scale % this.statesize[1]
-  console.log(" post poke ", state," at ", x ,y)
   var gl = this.igloo.gl,
   v = state * 255;
   this.state_new.subset([v, v, v, 255], x, y, 1, 1);
@@ -216,12 +213,7 @@ var help = true;
 
 function main() {
   var canvas = document.querySelector("#glCanvas");
-  // canvas.addEventListener('mousemove', (event) => {
-  //   console.log(getMousePos(canvas,event))});
-
-
   
-  // Initialize the GL context
   var ca = new CA(canvas, 1)
   console.log(ca)
   resizeCanvasToDisplaySize(canvas)
@@ -230,7 +222,6 @@ function main() {
     mousePressed = event.which
     var pos = getMousePos(canvas, event);
     lastPos = pos;
-    // console.log("pressed", mousePressed, pos, canvas, event, )
     ca.poke(pos[0], pos[1], mousePressed == 1);
     ca.draw();
   });
@@ -251,8 +242,7 @@ function main() {
         ]
         ca.poke(point[0], point[1], mousePressed == 1);
       }
-      lastPos = pos;
-      // console.log("moved to ", pos)      
+      lastPos = pos;  
       ca.draw();
     }});
 
@@ -289,15 +279,14 @@ function main() {
         break;
   }});
 
-  setInterval(() => {
-    // console.log(`Drawn and calculated ${(Date.now() - ca.lastTime)} mseconds`)
+  setInterval(() => {    
     if(enabled)
     {
+      console.log(`Drawn and calculated ${(Date.now() - ca.lastTime)} mseconds`)
       ca.step();
       ca.draw();
     }    
-    
-  }, 20);
+  }, 5);
 }
 
 if (
