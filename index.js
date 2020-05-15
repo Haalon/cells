@@ -10,78 +10,77 @@ var fShow = `
 precision mediump float;
 uniform sampler2D state;
 uniform vec2 screenSize;
+uniform vec2 u_offset;
 uniform float u_scale;
 
 void main() {
-    gl_FragColor = texture2D(state, gl_FragCoord.xy / screenSize / u_scale);
+    // gl_FragCoord.xy / u_scale  scales canvas pixel per cell
+    // + u_offset  shifts in state coordinates
+    gl_FragColor = texture2D(state, (gl_FragCoord.xy / u_scale + u_offset) / screenSize);
 }
 `
-
+// Mitosis
 var fStep = `
 precision mediump float;
-
 uniform sampler2D state;
 uniform vec2 screenSize;
-
-int get(vec2 offset) {
-    return int(texture2D(state, (gl_FragCoord.xy + offset) / screenSize).r);
-}
-void main() {
-    int sum =
-        get(vec2(-1.0, -1.0)) +
-        get(vec2(-1.0,  0.0)) +
-        get(vec2(-1.0,  1.0)) +
-        get(vec2( 0.0, -1.0)) +
-        get(vec2( 0.0,  1.0)) +
-        get(vec2( 1.0, -1.0)) +
-        get(vec2( 1.0,  0.0)) +
-        get(vec2( 1.0,  1.0));
-    if (sum == 3) {
-        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-    } else if (sum == 2) {
-        float current = float(get(vec2(0.0, 0.0)));
-        gl_FragColor = vec4(current, current, current, 1.0);
-    } else {
-        gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+float cv(float fx,float fy){
+    vec2 v=vec2(fx,fy);
+    float o=texture2D(state,(gl_FragCoord.xy+v)/screenSize).r;
+    if(o>0.0){
+        return 1.0;
+    }else{
+        return 0.0;
     }
-}`;
+}
+void main(){
+    float outval=cv(0.0,0.0);
+    float nhd0=cv(-14.0,-1.0)+cv(-14.0,0.0)+cv(-14.0,1.0)+cv(-13.0,-4.0)+cv(-13.0,-3.0)+cv(-13.0,-2.0)+cv(-13.0,2.0)+cv(-13.0,3.0)+cv(-13.0,4.0)+cv(-12.0,-6.0)+cv(-12.0,-5.0)+cv(-12.0,5.0)+cv(-12.0,6.0)+cv(-11.0,-8.0)+cv(-11.0,-7.0)+cv(-11.0,7.0)+cv(-11.0,8.0)+cv(-10.0,-9.0)+cv(-10.0,-1.0)+cv(-10.0,0.0)+cv(-10.0,1.0)+cv(-10.0,9.0)+cv(-9.0,-10.0)+cv(-9.0,-4.0)+cv(-9.0,-3.0)+cv(-9.0,-2.0)+cv(-9.0,2.0)+cv(-9.0,3.0)+cv(-9.0,4.0)+cv(-9.0,10.0)+cv(-8.0,-11.0)+cv(-8.0,-6.0)+cv(-8.0,-5.0)+cv(-8.0,5.0)+cv(-8.0,6.0)+cv(-8.0,11.0)+cv(-7.0,-11.0)+cv(-7.0,-7.0)+cv(-7.0,-2.0)+cv(-7.0,-1.0)+cv(-7.0,0.0)+cv(-7.0,1.0)+cv(-7.0,2.0)+cv(-7.0,7.0)+cv(-7.0,11.0)+cv(-6.0,-12.0)+cv(-6.0,-8.0)+cv(-6.0,-4.0)+cv(-6.0,-3.0)+cv(-6.0,3.0)+cv(-6.0,4.0)+cv(-6.0,8.0)+cv(-6.0,12.0)+cv(-5.0,-12.0)+cv(-5.0,-8.0)+cv(-5.0,-5.0)+cv(-5.0,-1.0)+cv(-5.0,0.0)+cv(-5.0,1.0)+cv(-5.0,5.0);
+    float nhd1=cv(-5.0,8.0)+cv(-5.0,12.0)+cv(-4.0,-13.0)+cv(-4.0,-9.0)+cv(-4.0,-6.0)+cv(-4.0,-3.0)+cv(-4.0,-2.0)+cv(-4.0,2.0)+cv(-4.0,3.0)+cv(-4.0,6.0)+cv(-4.0,9.0)+cv(-4.0,13.0)+cv(-3.0,-13.0)+cv(-3.0,-9.0)+cv(-3.0,-6.0)+cv(-3.0,-4.0)+cv(-3.0,-1.0)+cv(-3.0,0.0)+cv(-3.0,1.0)+cv(-3.0,4.0)+cv(-3.0,6.0)+cv(-3.0,9.0)+cv(-3.0,13.0)+cv(-2.0,-13.0)+cv(-2.0,-9.0)+cv(-2.0,-7.0)+cv(-2.0,-4.0)+cv(-2.0,-2.0)+cv(-2.0,2.0)+cv(-2.0,4.0)+cv(-2.0,7.0)+cv(-2.0,9.0)+cv(-2.0,13.0)+cv(-1.0,-14.0)+cv(-1.0,-10.0)+cv(-1.0,-7.0)+cv(-1.0,-5.0)+cv(-1.0,-3.0)+cv(-1.0,-1.0)+cv(-1.0,0.0)+cv(-1.0,1.0)+cv(-1.0,3.0)+cv(-1.0,5.0)+cv(-1.0,7.0)+cv(-1.0,10.0)+cv(-1.0,14.0)+cv(0.0,-14.0)+cv(0.0,-10.0)+cv(0.0,-7.0)+cv(0.0,-5.0)+cv(0.0,-3.0)+cv(0.0,-1.0)+cv(0.0,1.0)+cv(0.0,3.0)+cv(0.0,5.0)+cv(0.0,7.0)+cv(0.0,10.0)+cv(0.0,14.0)+cv(1.0,-14.0)+cv(1.0,-10.0)+cv(1.0,-7.0);
+    float nhd2=cv(1.0,-5.0)+cv(1.0,-3.0)+cv(1.0,-1.0)+cv(1.0,0.0)+cv(1.0,1.0)+cv(1.0,3.0)+cv(1.0,5.0)+cv(1.0,7.0)+cv(1.0,10.0)+cv(1.0,14.0)+cv(2.0,-13.0)+cv(2.0,-9.0)+cv(2.0,-7.0)+cv(2.0,-4.0)+cv(2.0,-2.0)+cv(2.0,2.0)+cv(2.0,4.0)+cv(2.0,7.0)+cv(2.0,9.0)+cv(2.0,13.0)+cv(3.0,-13.0)+cv(3.0,-9.0)+cv(3.0,-6.0)+cv(3.0,-4.0)+cv(3.0,-1.0)+cv(3.0,0.0)+cv(3.0,1.0)+cv(3.0,4.0)+cv(3.0,6.0)+cv(3.0,9.0)+cv(3.0,13.0)+cv(4.0,-13.0)+cv(4.0,-9.0)+cv(4.0,-6.0)+cv(4.0,-3.0)+cv(4.0,-2.0)+cv(4.0,2.0)+cv(4.0,3.0)+cv(4.0,6.0)+cv(4.0,9.0)+cv(4.0,13.0)+cv(5.0,-12.0)+cv(5.0,-8.0)+cv(5.0,-5.0)+cv(5.0,-1.0)+cv(5.0,0.0)+cv(5.0,1.0)+cv(5.0,5.0)+cv(5.0,8.0)+cv(5.0,12.0)+cv(6.0,-12.0)+cv(6.0,-8.0)+cv(6.0,-4.0)+cv(6.0,-3.0)+cv(6.0,3.0)+cv(6.0,4.0)+cv(6.0,8.0)+cv(6.0,12.0)+cv(7.0,-11.0)+cv(7.0,-7.0)+cv(7.0,-2.0);
+    float nhd3=cv(7.0,-1.0)+cv(7.0,0.0)+cv(7.0,1.0)+cv(7.0,2.0)+cv(7.0,7.0)+cv(7.0,11.0)+cv(8.0,-11.0)+cv(8.0,-6.0)+cv(8.0,-5.0)+cv(8.0,5.0)+cv(8.0,6.0)+cv(8.0,11.0)+cv(9.0,-10.0)+cv(9.0,-4.0)+cv(9.0,-3.0)+cv(9.0,-2.0)+cv(9.0,2.0)+cv(9.0,3.0)+cv(9.0,4.0)+cv(9.0,10.0)+cv(10.0,-9.0)+cv(10.0,-1.0)+cv(10.0,0.0)+cv(10.0,1.0)+cv(10.0,9.0)+cv(11.0,-8.0)+cv(11.0,-7.0)+cv(11.0,7.0)+cv(11.0,8.0)+cv(12.0,-6.0)+cv(12.0,-5.0)+cv(12.0,5.0)+cv(12.0,6.0)+cv(13.0,-4.0)+cv(13.0,-3.0)+cv(13.0,-2.0)+cv(13.0,2.0)+cv(13.0,3.0)+cv(13.0,4.0)+cv(14.0,-1.0)+cv(14.0,0.0)+cv(14.0,1.0);
+    float fin_0=nhd0+nhd1+nhd2+nhd3;
+    if(fin_0>=30.0&&fin_0<=155.0){
+        outval=0.0;
+    }
+    if(fin_0>=40.0&&fin_0<=42.0){
+        outval=1.0;
+    }
+    if(fin_0>=91.0&&fin_0<=155.0){
+        outval=1.0;
+    }
+    float nhd4=cv(-3.0,-1.0)+cv(-3.0,0.0)+cv(-3.0,1.0)+cv(-2.0,-2.0)+cv(-2.0,2.0)+cv(-1.0,-3.0)+cv(-1.0,-1.0)+cv(-1.0,0.0)+cv(-1.0,1.0)+cv(-1.0,3.0)+cv(0.0,-3.0)+cv(0.0,-1.0)+cv(0.0,1.0)+cv(0.0,3.0)+cv(1.0,-3.0)+cv(1.0,-1.0)+cv(1.0,0.0)+cv(1.0,1.0)+cv(1.0,3.0)+cv(2.0,-2.0)+cv(2.0,2.0)+cv(3.0,-1.0)+cv(3.0,0.0)+cv(3.0,1.0);
+    float fin_1=nhd4;
+    if(fin_1>=13.0&&fin_1<=19.0){
+        outval=1.0;
+    }
+    if(fin_1>=9.0&&fin_1<=9.0){
+        outval=1.0;
+    }
+    float nhd5=cv(-14.0,-3.0)+cv(-14.0,-2.0)+cv(-14.0,-1.0)+cv(-14.0,0.0)+cv(-14.0,1.0)+cv(-14.0,2.0)+cv(-14.0,3.0)+cv(-13.0,-6.0)+cv(-13.0,-5.0)+cv(-13.0,-4.0)+cv(-13.0,-3.0)+cv(-13.0,-2.0)+cv(-13.0,-1.0)+cv(-13.0,0.0)+cv(-13.0,1.0)+cv(-13.0,2.0)+cv(-13.0,3.0)+cv(-13.0,4.0)+cv(-13.0,5.0)+cv(-13.0,6.0)+cv(-12.0,-8.0)+cv(-12.0,-7.0)+cv(-12.0,-6.0)+cv(-12.0,-5.0)+cv(-12.0,-4.0)+cv(-12.0,-3.0)+cv(-12.0,-2.0)+cv(-12.0,-1.0)+cv(-12.0,0.0)+cv(-12.0,1.0)+cv(-12.0,2.0)+cv(-12.0,3.0)+cv(-12.0,4.0)+cv(-12.0,5.0)+cv(-12.0,6.0)+cv(-12.0,7.0)+cv(-12.0,8.0)+cv(-11.0,-9.0)+cv(-11.0,-8.0)+cv(-11.0,-7.0)+cv(-11.0,-6.0)+cv(-11.0,-5.0)+cv(-11.0,-4.0)+cv(-11.0,-3.0)+cv(-11.0,-2.0)+cv(-11.0,-1.0)+cv(-11.0,0.0)+cv(-11.0,1.0)+cv(-11.0,2.0)+cv(-11.0,3.0)+cv(-11.0,4.0)+cv(-11.0,5.0)+cv(-11.0,6.0)+cv(-11.0,7.0)+cv(-11.0,8.0)+cv(-11.0,9.0)+cv(-10.0,-10.0)+cv(-10.0,-9.0)+cv(-10.0,-8.0)+cv(-10.0,-7.0);
+    float nhd6=cv(-10.0,-6.0)+cv(-10.0,-5.0)+cv(-10.0,5.0)+cv(-10.0,6.0)+cv(-10.0,7.0)+cv(-10.0,8.0)+cv(-10.0,9.0)+cv(-10.0,10.0)+cv(-9.0,-11.0)+cv(-9.0,-10.0)+cv(-9.0,-9.0)+cv(-9.0,-8.0)+cv(-9.0,-7.0)+cv(-9.0,7.0)+cv(-9.0,8.0)+cv(-9.0,9.0)+cv(-9.0,10.0)+cv(-9.0,11.0)+cv(-8.0,-12.0)+cv(-8.0,-11.0)+cv(-8.0,-10.0)+cv(-8.0,-9.0)+cv(-8.0,-8.0)+cv(-8.0,8.0)+cv(-8.0,9.0)+cv(-8.0,10.0)+cv(-8.0,11.0)+cv(-8.0,12.0)+cv(-7.0,-12.0)+cv(-7.0,-11.0)+cv(-7.0,-10.0)+cv(-7.0,-9.0)+cv(-7.0,-2.0)+cv(-7.0,-1.0)+cv(-7.0,0.0)+cv(-7.0,1.0)+cv(-7.0,2.0)+cv(-7.0,9.0)+cv(-7.0,10.0)+cv(-7.0,11.0)+cv(-7.0,12.0)+cv(-6.0,-13.0)+cv(-6.0,-12.0)+cv(-6.0,-11.0)+cv(-6.0,-10.0)+cv(-6.0,-4.0)+cv(-6.0,-3.0)+cv(-6.0,3.0)+cv(-6.0,4.0)+cv(-6.0,10.0)+cv(-6.0,11.0)+cv(-6.0,12.0)+cv(-6.0,13.0)+cv(-5.0,-13.0)+cv(-5.0,-12.0)+cv(-5.0,-11.0)+cv(-5.0,-10.0)+cv(-5.0,-5.0)+cv(-5.0,5.0)+cv(-5.0,10.0)+cv(-5.0,11.0);
+    float nhd7=cv(-5.0,12.0)+cv(-5.0,13.0)+cv(-4.0,-13.0)+cv(-4.0,-12.0)+cv(-4.0,-11.0)+cv(-4.0,-6.0)+cv(-4.0,-1.0)+cv(-4.0,0.0)+cv(-4.0,1.0)+cv(-4.0,6.0)+cv(-4.0,11.0)+cv(-4.0,12.0)+cv(-4.0,13.0)+cv(-3.0,-14.0)+cv(-3.0,-13.0)+cv(-3.0,-12.0)+cv(-3.0,-11.0)+cv(-3.0,-6.0)+cv(-3.0,-2.0)+cv(-3.0,2.0)+cv(-3.0,6.0)+cv(-3.0,11.0)+cv(-3.0,12.0)+cv(-3.0,13.0)+cv(-3.0,14.0)+cv(-2.0,-14.0)+cv(-2.0,-13.0)+cv(-2.0,-12.0)+cv(-2.0,-11.0)+cv(-2.0,-7.0)+cv(-2.0,-3.0)+cv(-2.0,3.0)+cv(-2.0,7.0)+cv(-2.0,11.0)+cv(-2.0,12.0)+cv(-2.0,13.0)+cv(-2.0,14.0)+cv(-1.0,-14.0)+cv(-1.0,-13.0)+cv(-1.0,-12.0)+cv(-1.0,-11.0)+cv(-1.0,-7.0)+cv(-1.0,-4.0)+cv(-1.0,-1.0)+cv(-1.0,0.0)+cv(-1.0,1.0)+cv(-1.0,4.0)+cv(-1.0,7.0)+cv(-1.0,11.0)+cv(-1.0,12.0)+cv(-1.0,13.0)+cv(-1.0,14.0)+cv(0.0,-14.0)+cv(0.0,-13.0)+cv(0.0,-12.0)+cv(0.0,-11.0)+cv(0.0,-7.0)+cv(0.0,-4.0)+cv(0.0,-1.0)+cv(0.0,1.0)+cv(0.0,4.0);
+    float nhd8=cv(0.0,7.0)+cv(0.0,11.0)+cv(0.0,12.0)+cv(0.0,13.0)+cv(0.0,14.0)+cv(1.0,-14.0)+cv(1.0,-13.0)+cv(1.0,-12.0)+cv(1.0,-11.0)+cv(1.0,-7.0)+cv(1.0,-4.0)+cv(1.0,-1.0)+cv(1.0,0.0)+cv(1.0,1.0)+cv(1.0,4.0)+cv(1.0,7.0)+cv(1.0,11.0)+cv(1.0,12.0)+cv(1.0,13.0)+cv(1.0,14.0)+cv(2.0,-14.0)+cv(2.0,-13.0)+cv(2.0,-12.0)+cv(2.0,-11.0)+cv(2.0,-7.0)+cv(2.0,-3.0)+cv(2.0,3.0)+cv(2.0,7.0)+cv(2.0,11.0)+cv(2.0,12.0)+cv(2.0,13.0)+cv(2.0,14.0)+cv(3.0,-14.0)+cv(3.0,-13.0)+cv(3.0,-12.0)+cv(3.0,-11.0)+cv(3.0,-6.0)+cv(3.0,-2.0)+cv(3.0,2.0)+cv(3.0,6.0)+cv(3.0,11.0)+cv(3.0,12.0)+cv(3.0,13.0)+cv(3.0,14.0)+cv(4.0,-13.0)+cv(4.0,-12.0)+cv(4.0,-11.0)+cv(4.0,-6.0)+cv(4.0,-1.0)+cv(4.0,0.0)+cv(4.0,1.0)+cv(4.0,6.0)+cv(4.0,11.0)+cv(4.0,12.0)+cv(4.0,13.0)+cv(5.0,-13.0)+cv(5.0,-12.0)+cv(5.0,-11.0)+cv(5.0,-10.0)+cv(5.0,-5.0)+cv(5.0,5.0);
+    float nhd9=cv(5.0,10.0)+cv(5.0,11.0)+cv(5.0,12.0)+cv(5.0,13.0)+cv(6.0,-13.0)+cv(6.0,-12.0)+cv(6.0,-11.0)+cv(6.0,-10.0)+cv(6.0,-4.0)+cv(6.0,-3.0)+cv(6.0,3.0)+cv(6.0,4.0)+cv(6.0,10.0)+cv(6.0,11.0)+cv(6.0,12.0)+cv(6.0,13.0)+cv(7.0,-12.0)+cv(7.0,-11.0)+cv(7.0,-10.0)+cv(7.0,-9.0)+cv(7.0,-2.0)+cv(7.0,-1.0)+cv(7.0,0.0)+cv(7.0,1.0)+cv(7.0,2.0)+cv(7.0,9.0)+cv(7.0,10.0)+cv(7.0,11.0)+cv(7.0,12.0)+cv(8.0,-12.0)+cv(8.0,-11.0)+cv(8.0,-10.0)+cv(8.0,-9.0)+cv(8.0,-8.0)+cv(8.0,8.0)+cv(8.0,9.0)+cv(8.0,10.0)+cv(8.0,11.0)+cv(8.0,12.0)+cv(9.0,-11.0)+cv(9.0,-10.0)+cv(9.0,-9.0)+cv(9.0,-8.0)+cv(9.0,-7.0)+cv(9.0,7.0)+cv(9.0,8.0)+cv(9.0,9.0)+cv(9.0,10.0)+cv(9.0,11.0)+cv(10.0,-10.0)+cv(10.0,-9.0)+cv(10.0,-8.0)+cv(10.0,-7.0)+cv(10.0,-6.0)+cv(10.0,-5.0)+cv(10.0,5.0)+cv(10.0,6.0)+cv(10.0,7.0)+cv(10.0,8.0)+cv(10.0,9.0)+cv(10.0,10.0);
+    float nhd10=cv(11.0,-9.0)+cv(11.0,-8.0)+cv(11.0,-7.0)+cv(11.0,-6.0)+cv(11.0,-5.0)+cv(11.0,-4.0)+cv(11.0,-3.0)+cv(11.0,-2.0)+cv(11.0,-1.0)+cv(11.0,0.0)+cv(11.0,1.0)+cv(11.0,2.0)+cv(11.0,3.0)+cv(11.0,4.0)+cv(11.0,5.0)+cv(11.0,6.0)+cv(11.0,7.0)+cv(11.0,8.0)+cv(11.0,9.0)+cv(12.0,-8.0)+cv(12.0,-7.0)+cv(12.0,-6.0)+cv(12.0,-5.0)+cv(12.0,-4.0)+cv(12.0,-3.0)+cv(12.0,-2.0)+cv(12.0,-1.0)+cv(12.0,0.0)+cv(12.0,1.0)+cv(12.0,2.0)+cv(12.0,3.0)+cv(12.0,4.0)+cv(12.0,5.0)+cv(12.0,6.0)+cv(12.0,7.0)+cv(12.0,8.0)+cv(13.0,-6.0)+cv(13.0,-5.0)+cv(13.0,-4.0)+cv(13.0,-3.0)+cv(13.0,-2.0)+cv(13.0,-1.0)+cv(13.0,0.0)+cv(13.0,1.0)+cv(13.0,2.0)+cv(13.0,3.0)+cv(13.0,4.0)+cv(13.0,5.0)+cv(13.0,6.0)+cv(14.0,-3.0)+cv(14.0,-2.0)+cv(14.0,-1.0)+cv(14.0,0.0)+cv(14.0,1.0)+cv(14.0,2.0)+cv(14.0,3.0);
+    float fin_2=nhd5+nhd6+nhd7+nhd8+nhd9+nhd10;
+    if(fin_2>=190.0){
+        outval=0.0;
+    }
+    if(fin_2>=316.0&&fin_2<=320.0){
+        outval=1.0;
+    }
+    gl_FragColor=vec4(outval,outval,outval,1.0);
+}
+`;
 
-// var fStep = `
-// precision mediump float;
-
-// uniform sampler2D state;
-// uniform vec2 screenSize;
-
-// int get(vec2 offset) {
-//     return int(texture2D(state, (gl_FragCoord.xy + offset) / screenSize).r);
-// }
-
-// void main() {
-//     int sum =
-//         get(vec2(-1.0, 0.0)) +
-//         get(vec2(-2.0, 0.0)) +
-//         get(vec2(-3.0, 0.0)) +
-//         get(vec2(1.0, 0.0)) +
-//         get(vec2(2.0, 0.0)) +
-//         get(vec2(3.0, 0.0)) +
-//         get(vec2(0.0, 1.0)) +
-//         get(vec2(0.0, 2.0)) +
-//         get(vec2(0.0, 3.0)) +
-//         get(vec2(0.0, -1.0)) +
-//         get(vec2(0.0, -2.0)) +
-//         get(vec2(0.0, -3.0));
-//     float current = float(get(vec2(0.0, 0.0)));
-//     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-//     if (current == 1.0 && (sum > 5 || sum == 3)) {
-//         gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);        
-//     }
-
-//     if (current == 0.0 && (sum > 7 || sum == 2)) {
-//         gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
-//     }        
-// }`;
+// modulus, such that (-1) mod 10 == 9
+function mod(n, m) {
+  return ((n % m) + m) % m;
+}
 
 function CA(canvas, scale) {
+  this.canvas = canvas;
   var igloo = this.igloo = new Igloo(canvas);
   var gl = igloo.gl;
 
@@ -96,7 +95,10 @@ function CA(canvas, scale) {
   console.log(w,h);
   console.log(canvas.width, canvas.height);
   this.statesize = new Float32Array([1024, 512]);
+
   this.scale = 2;
+
+  this.offset = new Float32Array([0, 0]);
 
   gl.disable(gl.DEPTH_TEST);
 
@@ -148,6 +150,7 @@ CA.prototype.draw = function() {
     .attrib('a_position', this.buffer, 2)
     .uniformi('state', 0)
     .uniform('u_scale', this.scale)
+    .uniform('u_offset', this.offset)
     .uniform('screenSize', this.statesize)
     .draw(gl.TRIANGLE_STRIP, 4);
   this.lastTime = Date.now();
@@ -168,7 +171,7 @@ CA.prototype.set = function(state) {
 
 CA.prototype.setRandom = function(p) {
   var gl = this.igloo.gl, size = this.statesize[0] * this.statesize[1];
-  p = p == null ? 0.5 : p;
+  p = p == null ? 0.4 : p;
   var rand = new Uint8Array(size);
   for (var i = 0; i < size; i++) {
     rand[i] = Math.random() < p ? 1 : 0;
@@ -178,21 +181,34 @@ CA.prototype.setRandom = function(p) {
 };
 
 CA.prototype.poke = function(x, y, state) {
-  x = x / this.scale % this.statesize[0]
-  y = y / this.scale % this.statesize[1]
+  console.log("pre",x ,y)
+  x = mod(x / this.scale + this.offset[0], this.statesize[0]);
+  y = mod(y / this.scale + this.offset[1], this.statesize[1]);
+  console.log("post",x ,y)
+  console.log(this)
   var gl = this.igloo.gl,
   v = state * 255;
   this.state_new.subset([v, v, v, 255], x, y, 1, 1);
   return this;
 };
 
-function getMousePos(canvas, event) {
-  var rect = canvas.getBoundingClientRect();
+CA.prototype.getMousePos = function(event) {
+  var rect = this.canvas.getBoundingClientRect();
   return [
-    event.pageX - rect.left,
-    canvas.height - (event.pageY - rect.top),
+    (event.pageX - rect.left) ,
+    (this.canvas.height - (event.pageY - rect.top)) ,
   ];
+};
+
+// offsetless(!)
+CA.prototype.getStatePos = function(pos) {
+  return [
+    mod(pos[0] / this.scale, this.statesize[0]),
+    mod(pos[1] / this.scale, this.statesize[1]),
+  ]
 }
+
+
 
 function resizeCanvasToDisplaySize(canvas, multiplier) {
   multiplier = multiplier || 1;
@@ -220,19 +236,23 @@ function main() {
 
   canvas.addEventListener('mousedown', (event) => {
     mousePressed = event.which
-    var pos = getMousePos(canvas, event);
+    var pos = ca.getMousePos(event);
     lastPos = pos;
-    ca.poke(pos[0], pos[1], mousePressed == 1);
-    ca.draw();
+
+    // left mbutton
+    if(mousePressed == 1){
+      ca.poke(pos[0], pos[1], !event.shiftKey);
+      ca.draw();
+    }
   });
 
-  canvas.addEventListener('mouseup', (event) => {
+  window.addEventListener('mouseup', (event) => {
     mousePressed = null
   });
 
   canvas.addEventListener('mousemove', (event) => {
-    if(mousePressed) {
-      var pos = getMousePos(canvas, event);
+    var pos = ca.getMousePos(event);
+    if(mousePressed == 1) {      
       var diag_dist = Math.max(Math.abs(pos[0]-lastPos[0]), Math.abs(pos[1]-lastPos[1]))
       for (var step = 0; step <= diag_dist; step++) {
         var t = diag_dist == 0? 0.0 : step / diag_dist;
@@ -240,22 +260,73 @@ function main() {
           lastPos[0] + t * (pos[0] - lastPos[0]),
           lastPos[1] + t * (pos[1] - lastPos[1]),
         ]
-        ca.poke(point[0], point[1], mousePressed == 1);
-      }
-      lastPos = pos;  
+        ca.poke(point[0], point[1], !event.shiftKey);
+      }  
       ca.draw();
-    }});
+    }
+    // right mbutton
+    else if(mousePressed == 3) {
+      var oldStatePos = ca.getStatePos(lastPos)
+      var newStatePos = ca.getStatePos(pos)
+
+      ca.offset[0] += Math.round(oldStatePos[0] - newStatePos[0])
+      ca.offset[1] += Math.round(oldStatePos[1] - newStatePos[1])
+
+      ca.draw();
+    }
+    lastPos = pos;
+  });
 
   canvas.addEventListener('contextmenu', (event) => {
     event.preventDefault();
     return false;
   })
 
-  document.addEventListener('keyup', (event) =>{
+  canvas.addEventListener("wheel", event => {
+    const delta = Math.sign(event.deltaY);
+    var scaleDelta = 0.0;
+    if (delta > 0 && ca.scale < 16)
+      scaleDelta = 0.5;
+
+    if (delta < 0 && ca.scale > 1)
+      scaleDelta = -0.5;
+
+    var oldStatePos = ca.getStatePos(lastPos)
+    ca.scale += scaleDelta;
+    var newStatePos = ca.getStatePos(lastPos)
+
+    // offset so the zoom's origin matches the mouse location
+    ca.offset[0] += Math.round(oldStatePos[0] - newStatePos[0])
+    ca.offset[1] += Math.round(oldStatePos[1] - newStatePos[1])
+
+    ca.draw();
+  });
+
+  document.addEventListener('keydown', (event) =>{
     switch (event.which) {
       case 27: /* [esc] */
         help = !help
         document.getElementById('helpBox').style.visibility = help ? 'visible' : 'hidden';
+        break;
+
+      case 38: /* [up] */
+        ca.offset[1] += 1;
+        ca.draw();
+        break;
+
+      case 40: /* [down] */
+        ca.offset[1] -= 1;
+        ca.draw();
+        break;
+
+      case 37: /* [left] */
+        ca.offset[0] -= 1;
+        ca.draw();
+        break;        
+
+      case 39: /* [right] */
+        ca.offset[0] += 1;
+        ca.draw();
         break;
 
       case 32: /* [space] */
