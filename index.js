@@ -1,4 +1,4 @@
-var vShow = `
+var vCopy = `
 attribute vec2 a_position;
 
 void main() {
@@ -6,7 +6,7 @@ void main() {
   gl_Position = vec4(a_position, 0.0, 1.0);
 }`;
 
-var fShow = `
+var fCopy = `
 precision mediump float;
 uniform sampler2D state;
 uniform vec2 screenSize;
@@ -14,12 +14,46 @@ uniform vec2 u_offset;
 uniform float u_scale;
 
 void main() {
-    // gl_FragCoord.xy / u_scale  scales canvas pixel per cell
-    // + u_offset  shifts in state coordinates
-    gl_FragColor = texture2D(state, (gl_FragCoord.xy / u_scale + u_offset) / screenSize);
+    // gl_FragCoord.xy / u_scale  -  scales down canvas pixel to cell states
+    // + u_offset  -  shifts in state coordinates
+    // / screenSize  -  maps to viewPort
+    gl_FragColor =  texture2D(state, (gl_FragCoord.xy / u_scale + u_offset) / screenSize);
 }
 `
-// dotted amoebas 16
+
+
+var fHist = `
+precision mediump float;
+uniform sampler2D state;
+uniform sampler2D hist;
+uniform vec2 screenSize;
+uniform vec2 u_offset;
+uniform float u_scale;
+
+
+float get(float fx,float fy){
+    vec2 offset=vec2(fx,fy);
+    return texture2D(state, (gl_FragCoord.xy / u_scale + u_offset + offset) / screenSize).r;
+}
+
+float get_old(float fx,float fy){
+    vec2 offset=vec2(fx,fy);
+    return texture2D(hist, (gl_FragCoord.xy / u_scale + u_offset + offset) / screenSize).r;
+}
+
+void main() {   
+        
+    float col = get(0.0,0.0);   
+
+    float old_col = get_old(0.0,0.0);
+    old_col = old_col > 0.7 ? old_col * 0.95 : old_col - 0.01;
+    col = max(col, old_col);
+    
+    gl_FragColor =  vec4(col,col,col,1.0);
+}
+`
+
+// walls of flesh
 var fStep = `
 precision mediump float;
 uniform sampler2D state;
@@ -35,49 +69,24 @@ float cv(float fx,float fy){
 }
 void main(){
     float outval=cv(0.0,0.0);
-    float nhd0=cv(-1.0,-1.0)+cv(-1.0,0.0)+cv(-1.0,1.0)+cv(0.0,-1.0)+cv(0.0,1.0)+cv(1.0,-1.0)+cv(1.0,0.0)+cv(1.0,1.0);
+    float nhd0=cv(-7.0,-3.0)+cv(-7.0,0.0)+cv(-7.0,3.0)+cv(-5.0,-5.0)+cv(-5.0,-2.0)+cv(-5.0,-1.0)+cv(-5.0,0.0)+cv(-5.0,1.0)+cv(-5.0,2.0)+cv(-5.0,5.0)+cv(-4.0,-3.0)+cv(-4.0,3.0)+cv(-3.0,-7.0)+cv(-3.0,-4.0)+cv(-3.0,4.0)+cv(-3.0,7.0)+cv(-2.0,-5.0)+cv(-2.0,-1.0)+cv(-2.0,0.0)+cv(-2.0,1.0)+cv(-2.0,5.0)+cv(-1.0,-5.0)+cv(-1.0,-2.0)+cv(-1.0,-1.0)+cv(-1.0,0.0)+cv(-1.0,1.0)+cv(-1.0,2.0)+cv(-1.0,5.0)+cv(0.0,-7.0)+cv(0.0,-5.0)+cv(0.0,-2.0)+cv(0.0,-1.0)+cv(0.0,1.0)+cv(0.0,2.0)+cv(0.0,5.0)+cv(0.0,7.0)+cv(1.0,-5.0)+cv(1.0,-2.0)+cv(1.0,-1.0)+cv(1.0,0.0)+cv(1.0,1.0)+cv(1.0,2.0)+cv(1.0,5.0)+cv(2.0,-5.0)+cv(2.0,-1.0)+cv(2.0,0.0)+cv(2.0,1.0)+cv(2.0,5.0)+cv(3.0,-7.0)+cv(3.0,-4.0)+cv(3.0,4.0)+cv(3.0,7.0)+cv(4.0,-3.0)+cv(4.0,3.0)+cv(5.0,-5.0)+cv(5.0,-2.0)+cv(5.0,-1.0)+cv(5.0,0.0)+cv(5.0,1.0)+cv(5.0,2.0)+cv(5.0,5.0)+cv(7.0,-3.0)+cv(7.0,0.0)+cv(7.0,3.0);
     float fin_0=nhd0;
-    float nhd1=cv(-14.0,-1.0)+cv(-14.0,0.0)+cv(-14.0,1.0)+cv(-13.0,-4.0)+cv(-13.0,-3.0)+cv(-13.0,-2.0)+cv(-13.0,2.0)+cv(-13.0,3.0)+cv(-13.0,4.0)+cv(-12.0,-6.0)+cv(-12.0,-5.0)+cv(-12.0,5.0)+cv(-12.0,6.0)+cv(-11.0,-8.0)+cv(-11.0,-7.0)+cv(-11.0,7.0)+cv(-11.0,8.0)+cv(-10.0,-9.0)+cv(-10.0,-1.0)+cv(-10.0,0.0)+cv(-10.0,1.0)+cv(-10.0,9.0)+cv(-9.0,-10.0)+cv(-9.0,-4.0)+cv(-9.0,-3.0)+cv(-9.0,-2.0)+cv(-9.0,2.0)+cv(-9.0,3.0)+cv(-9.0,4.0)+cv(-9.0,10.0)+cv(-8.0,-11.0)+cv(-8.0,-6.0)+cv(-8.0,-5.0)+cv(-8.0,5.0)+cv(-8.0,6.0)+cv(-8.0,11.0)+cv(-7.0,-11.0)+cv(-7.0,-7.0)+cv(-7.0,-2.0)+cv(-7.0,-1.0)+cv(-7.0,0.0)+cv(-7.0,1.0)+cv(-7.0,2.0)+cv(-7.0,7.0)+cv(-7.0,11.0)+cv(-6.0,-12.0)+cv(-6.0,-8.0)+cv(-6.0,-4.0)+cv(-6.0,-3.0)+cv(-6.0,3.0)+cv(-6.0,4.0)+cv(-6.0,8.0)+cv(-6.0,12.0)+cv(-5.0,-12.0)+cv(-5.0,-8.0)+cv(-5.0,-5.0)+cv(-5.0,-1.0)+cv(-5.0,0.0)+cv(-5.0,1.0)+cv(-5.0,5.0);
-    float nhd2=cv(-5.0,8.0)+cv(-5.0,12.0)+cv(-4.0,-13.0)+cv(-4.0,-9.0)+cv(-4.0,-6.0)+cv(-4.0,-3.0)+cv(-4.0,-2.0)+cv(-4.0,2.0)+cv(-4.0,3.0)+cv(-4.0,6.0)+cv(-4.0,9.0)+cv(-4.0,13.0)+cv(-3.0,-13.0)+cv(-3.0,-9.0)+cv(-3.0,-6.0)+cv(-3.0,-4.0)+cv(-3.0,-1.0)+cv(-3.0,0.0)+cv(-3.0,1.0)+cv(-3.0,4.0)+cv(-3.0,6.0)+cv(-3.0,9.0)+cv(-3.0,13.0)+cv(-2.0,-13.0)+cv(-2.0,-9.0)+cv(-2.0,-7.0)+cv(-2.0,-4.0)+cv(-2.0,-2.0)+cv(-2.0,2.0)+cv(-2.0,4.0)+cv(-2.0,7.0)+cv(-2.0,9.0)+cv(-2.0,13.0)+cv(-1.0,-14.0)+cv(-1.0,-10.0)+cv(-1.0,-7.0)+cv(-1.0,-5.0)+cv(-1.0,-3.0)+cv(-1.0,-1.0)+cv(-1.0,0.0)+cv(-1.0,1.0)+cv(-1.0,3.0)+cv(-1.0,5.0)+cv(-1.0,7.0)+cv(-1.0,10.0)+cv(-1.0,14.0)+cv(0.0,-14.0)+cv(0.0,-10.0)+cv(0.0,-7.0)+cv(0.0,-5.0)+cv(0.0,-3.0)+cv(0.0,-1.0)+cv(0.0,1.0)+cv(0.0,3.0)+cv(0.0,5.0)+cv(0.0,7.0)+cv(0.0,10.0)+cv(0.0,14.0)+cv(1.0,-14.0)+cv(1.0,-10.0)+cv(1.0,-7.0);
-    float nhd3=cv(1.0,-5.0)+cv(1.0,-3.0)+cv(1.0,-1.0)+cv(1.0,0.0)+cv(1.0,1.0)+cv(1.0,3.0)+cv(1.0,5.0)+cv(1.0,7.0)+cv(1.0,10.0)+cv(1.0,14.0)+cv(2.0,-13.0)+cv(2.0,-9.0)+cv(2.0,-7.0)+cv(2.0,-4.0)+cv(2.0,-2.0)+cv(2.0,2.0)+cv(2.0,4.0)+cv(2.0,7.0)+cv(2.0,9.0)+cv(2.0,13.0)+cv(3.0,-13.0)+cv(3.0,-9.0)+cv(3.0,-6.0)+cv(3.0,-4.0)+cv(3.0,-1.0)+cv(3.0,0.0)+cv(3.0,1.0)+cv(3.0,4.0)+cv(3.0,6.0)+cv(3.0,9.0)+cv(3.0,13.0)+cv(4.0,-13.0)+cv(4.0,-9.0)+cv(4.0,-6.0)+cv(4.0,-3.0)+cv(4.0,-2.0)+cv(4.0,2.0)+cv(4.0,3.0)+cv(4.0,6.0)+cv(4.0,9.0)+cv(4.0,13.0)+cv(5.0,-12.0)+cv(5.0,-8.0)+cv(5.0,-5.0)+cv(5.0,-1.0)+cv(5.0,0.0)+cv(5.0,1.0)+cv(5.0,5.0)+cv(5.0,8.0)+cv(5.0,12.0)+cv(6.0,-12.0)+cv(6.0,-8.0)+cv(6.0,-4.0)+cv(6.0,-3.0)+cv(6.0,3.0)+cv(6.0,4.0)+cv(6.0,8.0)+cv(6.0,12.0)+cv(7.0,-11.0)+cv(7.0,-7.0)+cv(7.0,-2.0);
-    float nhd4=cv(7.0,-1.0)+cv(7.0,0.0)+cv(7.0,1.0)+cv(7.0,2.0)+cv(7.0,7.0)+cv(7.0,11.0)+cv(8.0,-11.0)+cv(8.0,-6.0)+cv(8.0,-5.0)+cv(8.0,5.0)+cv(8.0,6.0)+cv(8.0,11.0)+cv(9.0,-10.0)+cv(9.0,-4.0)+cv(9.0,-3.0)+cv(9.0,-2.0)+cv(9.0,2.0)+cv(9.0,3.0)+cv(9.0,4.0)+cv(9.0,10.0)+cv(10.0,-9.0)+cv(10.0,-1.0)+cv(10.0,0.0)+cv(10.0,1.0)+cv(10.0,9.0)+cv(11.0,-8.0)+cv(11.0,-7.0)+cv(11.0,7.0)+cv(11.0,8.0)+cv(12.0,-6.0)+cv(12.0,-5.0)+cv(12.0,5.0)+cv(12.0,6.0)+cv(13.0,-4.0)+cv(13.0,-3.0)+cv(13.0,-2.0)+cv(13.0,2.0)+cv(13.0,3.0)+cv(13.0,4.0)+cv(14.0,-1.0)+cv(14.0,0.0)+cv(14.0,1.0);
-    float fin_1=nhd1+nhd2+nhd3+nhd4;
-    if(fin_0>=0.0&&fin_0<=2.0){
+    if(fin_0>=39.0){
         outval=0.0;
     }
-    if(fin_0>=6.0&&fin_0<=7.0){
+    if(fin_0>=21.0&&fin_0<=32.0){
         outval=1.0;
     }
-    if(fin_1>=22.0&&fin_1<=33.0){
+    if(fin_0>=26.0&&fin_0<=30.0){
+        outval=1.0;
+    }
+    if(fin_0<=20.0){
         outval=0.0;
-    }
-    if(fin_1>=111.0&&fin_1<=112.0){
-        outval=0.0;
-    }
-    if(fin_1>=71.0&&fin_1<=77.0){
-        outval=0.0;
-    }
-    if(fin_1>=143.0){
-        outval=0.0;
-    }
-    if(fin_1>=80.0&&fin_1<=83.0){
-        outval=1.0;
-    }
-    if(fin_1>=51.0&&fin_1<=51.0){
-        outval=1.0;
-    }
-    if(fin_1>=31.0&&fin_1<=31.0){
-        outval=1.0;
-    }
-    if(fin_1>=23.0&&fin_1<=23.0){
-        outval=1.0;
-    }
-    if(fin_1>=117.0&&fin_1<=127.0){
-        outval=1.0;
     }
     gl_FragColor=vec4(outval,outval,outval,1.0);
 }
 `;
+
 
 // modulus, such that (-1) mod 10 == 9
 function mod(n, m) {
@@ -99,9 +108,10 @@ function CA(canvas, scale) {
   this.viewsize = new Float32Array([w, h]);
   console.log(w,h);
   console.log(canvas.width, canvas.height);
-  this.statesize = new Float32Array([1024, 512]);
+  this.statesize = new Float32Array([1024, 1024]);
 
-  this.scale = 2;
+  this.scale = 1;
+  this.interval = 10;
 
   this.offset = new Float32Array([0, 0]);
 
@@ -109,33 +119,58 @@ function CA(canvas, scale) {
 
   this.buffer = igloo.array(Igloo.QUAD2)
 
-  this.program_step = igloo.program(vShow, fStep);
-  this.program_show = igloo.program(vShow, fShow);
+  this.program_step = igloo.program(vCopy, fStep);
+  this.program_copy = igloo.program(vCopy, fCopy);
+  this.program_hist = igloo.program(vCopy, fHist);
+  this.hist = true;
 
-  this.state_old = igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST)
+  this.tex_temp = igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST)
     .blank(this.statesize[0], this.statesize[1]);
-  this.state_new = igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST)
+  this.tex_curr = igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST)
+    .blank(this.statesize[0], this.statesize[1]);
+  this.tex_hist = igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST)
     .blank(this.statesize[0], this.statesize[1]);
 
   this.frameBuffer = igloo.framebuffer();
 
-  this.lastTime = Date.now()
+  this.counter = 0;
 
   this.setRandom();
 }
 
+CA.prototype.run = function() {
+  if(!this.timer) {
+    this.timer = setInterval(() => {
+      this.step();
+      this.draw(true);
+    }, this.interval);
+  }
+}
+
+CA.prototype.stop = function() {
+  clearInterval(this.timer);
+  this.timer = null;
+}
+
+CA.prototype.switch = function() {
+  if(this.timer)
+    this.stop()
+  else
+    this.run()
+}
+
 CA.prototype.swap = function() {
-  var tmp = this.state_new;
-  this.state_new = this.state_old
-  this.state_old = tmp;
+  var tmp = this.tex_curr;
+  this.tex_curr = this.tex_temp
+  this.tex_temp = tmp;
   return this;
 };
 
 
 CA.prototype.step = function() {
   var gl = this.igloo.gl;
-  this.frameBuffer.attach(this.state_old);
-  this.state_new.bind(0);
+  this.frameBuffer.attach(this.tex_temp);
+  this.tex_curr.bind(0);
   gl.viewport(0, 0, this.statesize[0], this.statesize[1]);
   this.program_step.use()
     .attrib('a_position', this.buffer, 2)
@@ -143,15 +178,37 @@ CA.prototype.step = function() {
     .uniform('screenSize', this.statesize)
     .draw(gl.TRIANGLE_STRIP, 4);
   this.swap();
+  this.counter += 1;
   return this
 }
 
-CA.prototype.draw = function() {
+CA.prototype.draw = function(afterStep) {
   var gl = this.igloo.gl;
+  if(this.hist && afterStep) {
+    this.frameBuffer.attach(this.tex_temp);
+    this.tex_curr.bind(0);
+    this.tex_hist.bind(1);
+    gl.viewport(0, 0, this.statesize[0], this.statesize[1]);
+    this.program_hist.use()
+      .attrib('a_position', this.buffer, 2)
+      .uniformi('state', 0)
+      .uniformi('hist', 1)
+      .uniform('u_scale', 1.0)
+      .uniform('u_offset', new Float32Array([0, 0]))
+      .uniform('screenSize', this.statesize)
+      .draw(gl.TRIANGLE_STRIP, 4);
+    this.tex_hist.copy(0, 0, this.statesize[0], this.statesize[1])
+  }
+
+
   this.igloo.defaultFramebuffer.bind();
-  this.state_new.bind(0);
+  if(this.hist)
+    this.tex_hist.bind(0);  
+  else
+    this.tex_curr.bind(0);
+    
   gl.viewport(0, 0, this.viewsize[0], this.viewsize[1]);
-  this.program_show.use()
+  this.program_copy.use()
     .attrib('a_position', this.buffer, 2)
     .uniformi('state', 0)
     .uniform('u_scale', this.scale)
@@ -162,6 +219,7 @@ CA.prototype.draw = function() {
   return this;
 };
 
+
 CA.prototype.set = function(state) {
   var gl = this.igloo.gl;
   var rgba = new Uint8Array(this.statesize[0] * this.statesize[1] * 4);
@@ -170,13 +228,13 @@ CA.prototype.set = function(state) {
     rgba[ii + 0] = rgba[ii + 1] = rgba[ii + 2] = state[i] ? 255 : 0;
     rgba[ii + 3] = 255;
   }
-  this.state_new.subset(rgba, 0, 0, this.statesize[0], this.statesize[1]);
+  this.tex_curr.subset(rgba, 0, 0, this.statesize[0], this.statesize[1]);
   return this
 };
 
 CA.prototype.setRandom = function(p) {
   var gl = this.igloo.gl, size = this.statesize[0] * this.statesize[1];
-  p = p == null ? 0.4 : p;
+  p = p == null ? 0.5 : p;
   var rand = new Uint8Array(size);
   for (var i = 0; i < size; i++) {
     rand[i] = Math.random() < p ? 1 : 0;
@@ -186,14 +244,13 @@ CA.prototype.setRandom = function(p) {
 };
 
 CA.prototype.poke = function(x, y, state) {
-  console.log("pre",x ,y)
   x = mod(x / this.scale + this.offset[0], this.statesize[0]);
   y = mod(y / this.scale + this.offset[1], this.statesize[1]);
-  console.log("post",x ,y)
-  console.log(this)
   var gl = this.igloo.gl,
   v = state * 255;
-  this.state_new.subset([v, v, v, 255], x, y, 1, 1);
+  this.tex_curr.subset([v, v, v, 255], x, y, 1, 1);
+  if(this.hist)
+    this.tex_hist.subset([v, v, v, 255], x, y, 1, 1);
   return this;
 };
 
@@ -229,7 +286,6 @@ function resizeCanvasToDisplaySize(canvas, multiplier) {
 
 var mousePressed = null;
 var lastPos = null;
-var enabled = true;
 var help = true;
 
 function main() {
@@ -335,13 +391,13 @@ function main() {
         break;
 
       case 32: /* [space] */
-        enabled = !enabled
+        ca.switch()
         break;
 
       case 13: /* [enter] */
-        enabled = false
+        ca.stop();
         ca.step();
-        ca.draw();
+        ca.draw(true);
         break;
 
       case 8: /* [backspace] */
@@ -353,16 +409,18 @@ function main() {
         ca.setRandom(0);
         ca.draw();
         break;
+
+      case 72: /* [h] */
+        ca.hist = !ca.hist;
+        ca.draw();
+        break;
   }});
 
+  ca.run()
   setInterval(() => {    
-    if(enabled)
-    {
-      console.log(`Drawn and calculated ${(Date.now() - ca.lastTime)} mseconds`)
-      ca.step();
-      ca.draw();
-    }    
-  }, 10);
+    console.log(ca.counter, ' frames last second');
+    ca.counter = 0;
+  }, 1000);
 }
 
 if (
