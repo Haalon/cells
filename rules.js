@@ -114,7 +114,7 @@ void main(){
   }
 `;
 
-// tentacles 3
+// tentacles 3 0.3
 var fStep = `
 precision mediump float;
 uniform sampler2D state;
