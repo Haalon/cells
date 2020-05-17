@@ -1,12 +1,18 @@
+const url = window.location.href;
+var src = {
+  vCopy: 'glsl/copy.vert',
+  fCopy: 'glsl/copy.frag',
+  fHist: 'glsl/hist.frag',
+  fRule: 'glsl/rule.frag',
+}
+
+for(var key in src)
+  src[key] = url + src[key];
+
 // modulus, such that (-1) mod 10 == 9
 function mod(n, m) {
   return ((n % m) + m) % m;
 }
-
-var vCopy = '/glsl/copy.vert';
-var fCopy = '/glsl/copy.fraG';
-var fHist = '/glsl/hist.frag';
-var fRule = '/glsl/rule.frag';
 
 
 function CA(canvas, scale) {
@@ -36,10 +42,10 @@ function CA(canvas, scale) {
   gl.disable(gl.DEPTH_TEST);
 
   this.buffer = igloo.array(Igloo.QUAD2)
-  
-  this.program_copy = igloo.program(vCopy, fCopy);
-  this.program_hist = igloo.program(vCopy, fHist);
-  this.program_rule = igloo.program(vCopy, fRule);
+
+  this.program_copy = igloo.program(src.vCopy, src.fCopy);
+  this.program_hist = igloo.program(src.vCopy, src.fHist);
+  this.program_rule = igloo.program(src.vCopy, src.fRule);
 
   this.hist = true;
 
