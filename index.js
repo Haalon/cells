@@ -116,7 +116,9 @@ function CA(canvas, scale) {
     return;
   }
 
-  var w = canvas.clientWidth, h = canvas.clientHeight;
+  const w  = canvas.width = screen.width * window.devicePixelRatio;
+  const h = canvas.height = screen.height * window.devicePixelRatio;
+  
   this.scale = scale;
   this.viewsize = new Float32Array([w, h]);
   console.log(w,h);
@@ -320,17 +322,7 @@ CA.prototype.getStatePos = function(pos) {
 }
 
 
-
-function resizeCanvasToDisplaySize(canvas) {
-  const width  = screen.width * window.devicePixelRatio;
-  const height = screen.height * window.devicePixelRatio;
-  if (canvas.width !== width ||  canvas.height !== height) {
-    canvas.width  = width;
-    canvas.height = height;
-    return true;
-  }
-  return false;
-}
+// function Controller(ca)
 
 var mousePressed = null;
 var lastPos = null;
@@ -339,7 +331,7 @@ var drawR = 1;
 
 function main() {
   var canvas = document.querySelector("#glCanvas");
-  resizeCanvasToDisplaySize(canvas)
+  
   var ca = new CA(canvas, 1)
   console.log(ca)
   
