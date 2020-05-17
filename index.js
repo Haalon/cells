@@ -123,7 +123,7 @@ function CA(canvas, scale) {
   console.log(canvas.width, canvas.height);
   this.statesize = new Float32Array([1024, 1024]);
 
-  this.scale = 1;
+  this.scale = 2;
   this.interval = 10;
 
   this.offset = new Float32Array([0, 0]);
@@ -366,7 +366,7 @@ function main() {
       var diag_dist = Math.max(Math.abs(pos[0]-lastPos[0]), Math.abs(pos[1]-lastPos[1]))
       // bigger radius ==> bigger steps
       // also if we are zoom in (small scale) steps should be smaller
-      for (var step = 0; step <= diag_dist; step += draw * ca.scale) {
+      for (var step = 0; step <= diag_dist; step += drawR * ca.scale) {
         var t = diag_dist == 0? 0.0 : step / diag_dist;
         var point = [
           lastPos[0] + t * (pos[0] - lastPos[0]),
