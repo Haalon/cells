@@ -1,110 +1,13 @@
-var vCopy = `
-attribute vec2 a_position;
-
-void main() {
- 
-  gl_Position = vec4(a_position, 0.0, 1.0);
-}`;
-
-var fCopy = `
-precision mediump float;
-uniform sampler2D state;
-uniform vec2 screenSize;
-uniform vec2 u_offset;
-uniform float u_scale;
-
-void main() {
-    // gl_FragCoord.xy / u_scale  -  scales down canvas pixel to cell states
-    // + u_offset  -  shifts in state coordinates
-    // / screenSize  -  maps to viewPort
-    gl_FragColor =  texture2D(state, (gl_FragCoord.xy / u_scale + u_offset) / screenSize);
-}
-`
-
-
-var fHist = `
-precision mediump float;
-uniform sampler2D state;
-uniform sampler2D hist;
-uniform vec2 screenSize;
-uniform vec2 u_offset;
-uniform float u_scale;
-
-
-float get(float fx,float fy){
-    vec2 offset=vec2(fx,fy);
-    return texture2D(state, (gl_FragCoord.xy / u_scale + u_offset + offset) / screenSize).r;
-}
-
-float get_old(float fx,float fy){
-    vec2 offset=vec2(fx,fy);
-    return texture2D(hist, (gl_FragCoord.xy / u_scale + u_offset + offset) / screenSize).r;
-}
-
-void main() {   
-        
-    float col = get(0.0,0.0);   
-
-    float old_col = get_old(0.0,0.0);
-    old_col = old_col > 0.7 ? old_col * 0.95 : old_col - 0.01;
-    col = max(col, old_col);
-    
-    gl_FragColor =  vec4(col,col,col,1.0);
-}
-`
-
-// tentacles 3
-var fStep = `
-precision mediump float;
-uniform sampler2D state;
-uniform vec2 screenSize;
-float cv(float fx,float fy){
-    vec2 v=vec2(fx,fy);
-    float o=texture2D(state,(gl_FragCoord.xy+v)/screenSize).r;
-    if(o>0.0){
-        return 1.0;
-    }else{
-        return 0.0;
-    }
-}
-void main(){
-    float outval=cv(0.0,0.0);
-    float nhd0=cv(-6.0,-1.0)+cv(-6.0,0.0)+cv(-6.0,1.0)+cv(-5.0,-3.0)+cv(-5.0,-2.0)+cv(-5.0,2.0)+cv(-5.0,3.0)+cv(-4.0,-4.0)+cv(-4.0,4.0)+cv(-3.0,-5.0)+cv(-3.0,-2.0)+cv(-3.0,-1.0)+cv(-3.0,0.0)+cv(-3.0,1.0)+cv(-3.0,2.0)+cv(-3.0,5.0)+cv(-2.0,-5.0)+cv(-2.0,-3.0)+cv(-2.0,3.0)+cv(-2.0,5.0)+cv(-1.0,-6.0)+cv(-1.0,-3.0)+cv(-1.0,-1.0)+cv(-1.0,0.0)+cv(-1.0,1.0)+cv(-1.0,3.0)+cv(-1.0,6.0)+cv(0.0,-6.0)+cv(0.0,-3.0)+cv(0.0,-1.0)+cv(0.0,1.0)+cv(0.0,3.0)+cv(0.0,6.0)+cv(1.0,-6.0)+cv(1.0,-3.0)+cv(1.0,-1.0)+cv(1.0,0.0)+cv(1.0,1.0)+cv(1.0,3.0)+cv(1.0,6.0)+cv(2.0,-5.0)+cv(2.0,-3.0)+cv(2.0,3.0)+cv(2.0,5.0)+cv(3.0,-5.0)+cv(3.0,-2.0)+cv(3.0,-1.0)+cv(3.0,0.0)+cv(3.0,1.0)+cv(3.0,2.0)+cv(3.0,5.0)+cv(4.0,-4.0)+cv(4.0,4.0)+cv(5.0,-3.0)+cv(5.0,-2.0)+cv(5.0,2.0)+cv(5.0,3.0)+cv(6.0,-1.0)+cv(6.0,0.0)+cv(6.0,1.0);
-    float nhd1=cv(-20.0,-2.0)+cv(-20.0,-1.0)+cv(-20.0,0.0)+cv(-20.0,1.0)+cv(-20.0,2.0)+cv(-19.0,-5.0)+cv(-19.0,-4.0)+cv(-19.0,-3.0)+cv(-19.0,3.0)+cv(-19.0,4.0)+cv(-19.0,5.0)+cv(-18.0,-8.0)+cv(-18.0,-7.0)+cv(-18.0,-6.0)+cv(-18.0,6.0)+cv(-18.0,7.0)+cv(-18.0,8.0)+cv(-17.0,-10.0)+cv(-17.0,-9.0)+cv(-17.0,9.0)+cv(-17.0,10.0)+cv(-16.0,-12.0)+cv(-16.0,-11.0)+cv(-16.0,11.0)+cv(-16.0,12.0)+cv(-15.0,-13.0)+cv(-15.0,-2.0)+cv(-15.0,-1.0)+cv(-15.0,0.0)+cv(-15.0,1.0)+cv(-15.0,2.0)+cv(-15.0,13.0)+cv(-14.0,-14.0)+cv(-14.0,-5.0)+cv(-14.0,-4.0)+cv(-14.0,-3.0)+cv(-14.0,3.0)+cv(-14.0,4.0)+cv(-14.0,5.0)+cv(-14.0,14.0)+cv(-13.0,-15.0)+cv(-13.0,-7.0)+cv(-13.0,-6.0)+cv(-13.0,6.0)+cv(-13.0,7.0)+cv(-13.0,15.0)+cv(-12.0,-16.0)+cv(-12.0,-9.0)+cv(-12.0,-8.0)+cv(-12.0,8.0)+cv(-12.0,9.0)+cv(-12.0,16.0)+cv(-11.0,-16.0)+cv(-11.0,-10.0)+cv(-11.0,-3.0)+cv(-11.0,-2.0)+cv(-11.0,-1.0)+cv(-11.0,0.0)+cv(-11.0,1.0)+cv(-11.0,2.0)+cv(-11.0,3.0)+cv(-11.0,10.0)+cv(-11.0,16.0)+cv(-10.0,-17.0)+cv(-10.0,-11.0)+cv(-10.0,-5.0)+cv(-10.0,-4.0)+cv(-10.0,-3.0)+cv(-10.0,-2.0)+cv(-10.0,2.0)+cv(-10.0,3.0)+cv(-10.0,4.0)+cv(-10.0,5.0)+cv(-10.0,11.0)+cv(-10.0,17.0)+cv(-9.0,-17.0)+cv(-9.0,-12.0)+cv(-9.0,-7.0)+cv(-9.0,-6.0)+cv(-9.0,-5.0)+cv(-9.0,5.0)+cv(-9.0,6.0)+cv(-9.0,7.0)+cv(-9.0,12.0)+cv(-9.0,17.0)+cv(-8.0,-18.0)+cv(-8.0,-12.0)+cv(-8.0,-8.0)+cv(-8.0,-7.0)+cv(-8.0,7.0)+cv(-8.0,8.0)+cv(-8.0,12.0)+cv(-8.0,18.0)+cv(-7.0,-18.0)+cv(-7.0,-13.0)+cv(-7.0,-9.0)+cv(-7.0,-8.0)+cv(-7.0,-1.0)+cv(-7.0,0.0)+cv(-7.0,1.0)+cv(-7.0,8.0)+cv(-7.0,9.0)+cv(-7.0,13.0)+cv(-7.0,18.0)+cv(-6.0,-18.0)+cv(-6.0,-13.0)+cv(-6.0,-9.0)+cv(-6.0,-3.0)+cv(-6.0,-2.0)+cv(-6.0,-1.0)+cv(-6.0,0.0)+cv(-6.0,1.0)+cv(-6.0,2.0)+cv(-6.0,3.0)+cv(-6.0,9.0)+cv(-6.0,13.0)+cv(-6.0,18.0)+cv(-5.0,-19.0)+cv(-5.0,-14.0)+cv(-5.0,-10.0)+cv(-5.0,-9.0)+cv(-5.0,-5.0)+cv(-5.0,-4.0)+cv(-5.0,-3.0)+cv(-5.0,-2.0)+cv(-5.0,2.0)+cv(-5.0,3.0)+cv(-5.0,4.0)+cv(-5.0,5.0)+cv(-5.0,9.0)+cv(-5.0,10.0)+cv(-5.0,14.0)+cv(-5.0,19.0)+cv(-4.0,-19.0)+cv(-4.0,-14.0)+cv(-4.0,-10.0)+cv(-4.0,-5.0)+cv(-4.0,-4.0)+cv(-4.0,4.0)+cv(-4.0,5.0)+cv(-4.0,10.0)+cv(-4.0,14.0)+cv(-4.0,19.0)+cv(-3.0,-19.0)+cv(-3.0,-14.0)+cv(-3.0,-11.0)+cv(-3.0,-10.0)+cv(-3.0,-6.0)+cv(-3.0,-5.0)+cv(-3.0,5.0)+cv(-3.0,6.0)+cv(-3.0,10.0)+cv(-3.0,11.0);
-    float nhd2=cv(-3.0,14.0)+cv(-3.0,19.0)+cv(-2.0,-20.0)+cv(-2.0,-15.0)+cv(-2.0,-11.0)+cv(-2.0,-10.0)+cv(-2.0,-6.0)+cv(-2.0,-5.0)+cv(-2.0,-2.0)+cv(-2.0,-1.0)+cv(-2.0,0.0)+cv(-2.0,1.0)+cv(-2.0,2.0)+cv(-2.0,5.0)+cv(-2.0,6.0)+cv(-2.0,10.0)+cv(-2.0,11.0)+cv(-2.0,15.0)+cv(-2.0,20.0)+cv(-1.0,-20.0)+cv(-1.0,-15.0)+cv(-1.0,-11.0)+cv(-1.0,-7.0)+cv(-1.0,-6.0)+cv(-1.0,-2.0)+cv(-1.0,-1.0)+cv(-1.0,0.0)+cv(-1.0,1.0)+cv(-1.0,2.0)+cv(-1.0,6.0)+cv(-1.0,7.0)+cv(-1.0,11.0)+cv(-1.0,15.0)+cv(-1.0,20.0)+cv(0.0,-20.0)+cv(0.0,-15.0)+cv(0.0,-11.0)+cv(0.0,-7.0)+cv(0.0,-6.0)+cv(0.0,-2.0)+cv(0.0,-1.0)+cv(0.0,1.0)+cv(0.0,2.0)+cv(0.0,6.0)+cv(0.0,7.0)+cv(0.0,11.0)+cv(0.0,15.0)+cv(0.0,20.0)+cv(1.0,-20.0)+cv(1.0,-15.0)+cv(1.0,-11.0)+cv(1.0,-7.0)+cv(1.0,-6.0)+cv(1.0,-2.0)+cv(1.0,-1.0)+cv(1.0,0.0)+cv(1.0,1.0)+cv(1.0,2.0)+cv(1.0,6.0)+cv(1.0,7.0)+cv(1.0,11.0)+cv(1.0,15.0)+cv(1.0,20.0)+cv(2.0,-20.0)+cv(2.0,-15.0)+cv(2.0,-11.0)+cv(2.0,-10.0)+cv(2.0,-6.0)+cv(2.0,-5.0)+cv(2.0,-2.0)+cv(2.0,-1.0)+cv(2.0,0.0)+cv(2.0,1.0)+cv(2.0,2.0)+cv(2.0,5.0)+cv(2.0,6.0)+cv(2.0,10.0)+cv(2.0,11.0)+cv(2.0,15.0)+cv(2.0,20.0)+cv(3.0,-19.0)+cv(3.0,-14.0)+cv(3.0,-11.0)+cv(3.0,-10.0)+cv(3.0,-6.0)+cv(3.0,-5.0)+cv(3.0,5.0)+cv(3.0,6.0)+cv(3.0,10.0)+cv(3.0,11.0)+cv(3.0,14.0)+cv(3.0,19.0)+cv(4.0,-19.0)+cv(4.0,-14.0)+cv(4.0,-10.0)+cv(4.0,-5.0)+cv(4.0,-4.0)+cv(4.0,4.0)+cv(4.0,5.0)+cv(4.0,10.0)+cv(4.0,14.0)+cv(4.0,19.0)+cv(5.0,-19.0)+cv(5.0,-14.0)+cv(5.0,-10.0)+cv(5.0,-9.0)+cv(5.0,-5.0)+cv(5.0,-4.0)+cv(5.0,-3.0)+cv(5.0,-2.0)+cv(5.0,2.0)+cv(5.0,3.0)+cv(5.0,4.0)+cv(5.0,5.0)+cv(5.0,9.0)+cv(5.0,10.0)+cv(5.0,14.0)+cv(5.0,19.0)+cv(6.0,-18.0)+cv(6.0,-13.0)+cv(6.0,-9.0)+cv(6.0,-3.0)+cv(6.0,-2.0)+cv(6.0,-1.0)+cv(6.0,0.0)+cv(6.0,1.0)+cv(6.0,2.0)+cv(6.0,3.0)+cv(6.0,9.0)+cv(6.0,13.0)+cv(6.0,18.0)+cv(7.0,-18.0)+cv(7.0,-13.0)+cv(7.0,-9.0)+cv(7.0,-8.0)+cv(7.0,-1.0)+cv(7.0,0.0)+cv(7.0,1.0)+cv(7.0,8.0)+cv(7.0,9.0)+cv(7.0,13.0)+cv(7.0,18.0)+cv(8.0,-18.0)+cv(8.0,-12.0)+cv(8.0,-8.0)+cv(8.0,-7.0)+cv(8.0,7.0)+cv(8.0,8.0)+cv(8.0,12.0)+cv(8.0,18.0)+cv(9.0,-17.0)+cv(9.0,-12.0)+cv(9.0,-7.0);
-    float nhd3=cv(9.0,-6.0)+cv(9.0,-5.0)+cv(9.0,5.0)+cv(9.0,6.0)+cv(9.0,7.0)+cv(9.0,12.0)+cv(9.0,17.0)+cv(10.0,-17.0)+cv(10.0,-11.0)+cv(10.0,-5.0)+cv(10.0,-4.0)+cv(10.0,-3.0)+cv(10.0,-2.0)+cv(10.0,2.0)+cv(10.0,3.0)+cv(10.0,4.0)+cv(10.0,5.0)+cv(10.0,11.0)+cv(10.0,17.0)+cv(11.0,-16.0)+cv(11.0,-10.0)+cv(11.0,-3.0)+cv(11.0,-2.0)+cv(11.0,-1.0)+cv(11.0,0.0)+cv(11.0,1.0)+cv(11.0,2.0)+cv(11.0,3.0)+cv(11.0,10.0)+cv(11.0,16.0)+cv(12.0,-16.0)+cv(12.0,-9.0)+cv(12.0,-8.0)+cv(12.0,8.0)+cv(12.0,9.0)+cv(12.0,16.0)+cv(13.0,-15.0)+cv(13.0,-7.0)+cv(13.0,-6.0)+cv(13.0,6.0)+cv(13.0,7.0)+cv(13.0,15.0)+cv(14.0,-14.0)+cv(14.0,-5.0)+cv(14.0,-4.0)+cv(14.0,-3.0)+cv(14.0,3.0)+cv(14.0,4.0)+cv(14.0,5.0)+cv(14.0,14.0)+cv(15.0,-13.0)+cv(15.0,-2.0)+cv(15.0,-1.0)+cv(15.0,0.0)+cv(15.0,1.0)+cv(15.0,2.0)+cv(15.0,13.0)+cv(16.0,-12.0)+cv(16.0,-11.0)+cv(16.0,11.0)+cv(16.0,12.0)+cv(17.0,-10.0)+cv(17.0,-9.0)+cv(17.0,9.0)+cv(17.0,10.0)+cv(18.0,-8.0)+cv(18.0,-7.0)+cv(18.0,-6.0)+cv(18.0,6.0)+cv(18.0,7.0)+cv(18.0,8.0)+cv(19.0,-5.0)+cv(19.0,-4.0)+cv(19.0,-3.0)+cv(19.0,3.0)+cv(19.0,4.0)+cv(19.0,5.0)+cv(20.0,-2.0)+cv(20.0,-1.0)+cv(20.0,0.0)+cv(20.0,1.0)+cv(20.0,2.0);
-    float fin_0=nhd0;
-    float fin_1=nhd1+nhd2+nhd3;
-    if(fin_0>=29.0&&fin_0<=34.0){
-        outval=1.0;
-    }
-    if(fin_0>=16.0&&fin_0<=26.0){
-        outval=0.0;
-    }
-    if(fin_1>=183.0&&fin_1<=290.0){
-        outval=1.0;
-    }
-    if(fin_1>=101.0&&fin_1<=103.0){
-        outval=1.0;
-    }
-    if(fin_1>=70.0&&fin_1<=74.0){
-        outval=1.0;
-    }
-    if(fin_1>=55.0&&fin_1<=65.0){
-        outval=0.0;
-    }
-    if(fin_1>=220.0){
-        outval=0.0;
-    }
-    gl_FragColor=vec4(outval,outval,outval,1.0);
-}
-`;
-
-
 // modulus, such that (-1) mod 10 == 9
 function mod(n, m) {
   return ((n % m) + m) % m;
 }
+
+var vCopy = '/glsl/copy.vert';
+var fCopy = '/glsl/copy.fraG';
+var fHist = '/glsl/hist.frag';
+var fRule = '/glsl/rule.frag';
+
 
 function CA(canvas, scale) {
   this.canvas = canvas;
@@ -133,10 +36,11 @@ function CA(canvas, scale) {
   gl.disable(gl.DEPTH_TEST);
 
   this.buffer = igloo.array(Igloo.QUAD2)
-
-  this.program_step = igloo.program(vCopy, fStep);
+  
   this.program_copy = igloo.program(vCopy, fCopy);
   this.program_hist = igloo.program(vCopy, fHist);
+  this.program_rule = igloo.program(vCopy, fRule);
+
   this.hist = true;
 
   this.tex_temp = igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST)
@@ -187,7 +91,7 @@ CA.prototype.step = function() {
   this.frameBuffer.attach(this.tex_temp);
   this.tex_curr.bind(0);
   gl.viewport(0, 0, this.statesize[0], this.statesize[1]);
-  this.program_step.use()
+  this.program_rule.use()
     .attrib('a_position', this.buffer, 2)
     .uniformi('state', 0)
     .uniform('screenSize', this.statesize)
@@ -199,6 +103,8 @@ CA.prototype.step = function() {
 
 CA.prototype.draw = function(afterStep) {
   var gl = this.igloo.gl;
+
+  //
   if(this.hist && afterStep) {
     this.frameBuffer.attach(this.tex_temp);
     this.tex_curr.bind(0);
@@ -271,15 +177,14 @@ CA.prototype.pokeSqr = function(x, y, state, r) {
 
 
   this.poke(x, y, state, 2*r - 1, 2*r - 1)
-  // this.poke(x,y,state,2*r - 1, 2*r - 1)
 }
 
 
 CA.prototype.poke = function(x, y, state, w, h) {
-  // console.log(x,y,w,h)
+
   h = h || 1
   w = w || 1
-  
+
   var ex = x + w - 1;
   var ey = y + h - 1;
 
@@ -322,55 +227,51 @@ CA.prototype.getStatePos = function(pos) {
 }
 
 
-// function Controller(ca)
+function Controller(ca) {  
+  var canvas = ca.canvas
+  this.mousePressed = null;
+  this.lastPos = null;
+  this.help = true;
+  this.drawR = 1;
 
-var mousePressed = null;
-var lastPos = null;
-var help = true;
-var drawR = 1;
-
-function main() {
-  var canvas = document.querySelector("#glCanvas");
-  
-  var ca = new CA(canvas, 1)
-  console.log(ca)
-  
 
   canvas.addEventListener('mousedown', (event) => {
-    mousePressed = event.which
+    this.mousePressed = event.which
     var pos = ca.getMousePos(event);
-    lastPos = pos;
+    this.lastPos = pos;
 
     // left mbutton
-    if(mousePressed == 1){
-      ca.pokeSqr(pos[0], pos[1], !event.shiftKey, drawR);
+    if(this.mousePressed == 1){
+      ca.pokeSqr(pos[0], pos[1], !event.shiftKey, this.drawR);
       ca.draw();
     }
   });
 
+
   window.addEventListener('mouseup', (event) => {
-    mousePressed = null
+    this.mousePressed = null
   });
+
 
   canvas.addEventListener('mousemove', (event) => {
     var pos = ca.getMousePos(event);
-    if(mousePressed == 1) {      
-      var diag_dist = Math.max(Math.abs(pos[0]-lastPos[0]), Math.abs(pos[1]-lastPos[1]))
+    if(this.mousePressed == 1) {      
+      var diag_dist = Math.max(Math.abs(pos[0]-this.lastPos[0]), Math.abs(pos[1]-this.lastPos[1]))
       // bigger radius ==> bigger steps
       // also if we are zoom in (small scale) steps should be smaller
-      for (var step = 0; step <= diag_dist; step += drawR * ca.scale) {
+      for (var step = 0; step <= diag_dist; step += this.drawR * ca.scale) {
         var t = diag_dist == 0? 0.0 : step / diag_dist;
         var point = [
-          lastPos[0] + t * (pos[0] - lastPos[0]),
-          lastPos[1] + t * (pos[1] - lastPos[1]),
+          this.lastPos[0] + t * (pos[0] - this.lastPos[0]),
+          this.lastPos[1] + t * (pos[1] - this.lastPos[1]),
         ]
-        ca.pokeSqr(point[0], point[1], !event.shiftKey, drawR);
+        ca.pokeSqr(point[0], point[1], !event.shiftKey, this.drawR);
       }  
       ca.draw();
     }
     // right mbutton
-    else if(mousePressed == 3) {
-      var oldStatePos = ca.getStatePos(lastPos)
+    else if(this.mousePressed == 3) {
+      var oldStatePos = ca.getStatePos(this.lastPos)
       var newStatePos = ca.getStatePos(pos)
 
       ca.offset[0] += oldStatePos[0] - newStatePos[0]
@@ -378,13 +279,15 @@ function main() {
 
       ca.draw();
     }
-    lastPos = pos;
+    this.lastPos = pos;
   });
+
 
   canvas.addEventListener('contextmenu', (event) => {
     event.preventDefault();
     return false;
   })
+
 
   canvas.addEventListener("wheel", event => {
 
@@ -400,9 +303,9 @@ function main() {
     if (delta < 0 && ca.scale > 0.125)
       scaleMult = 0.5;
 
-    var oldStatePos = ca.getStatePos(lastPos)
+    var oldStatePos = ca.getStatePos(this.lastPos)
     ca.scale *= scaleMult;
-    var newStatePos = ca.getStatePos(lastPos)
+    var newStatePos = ca.getStatePos(this.lastPos)
 
     // offset so the zoom's origin matches the mouse location
     ca.offset[0] += oldStatePos[0] - newStatePos[0]
@@ -411,11 +314,12 @@ function main() {
     ca.draw();
   });
 
+
   document.addEventListener('keydown', (event) =>{
     switch (event.which) {
       case 27: /* [esc] */
-        help = !help
-        document.getElementById('helpBox').style.visibility = help ? 'visible' : 'hidden';
+        this.help = !this.help
+        document.getElementById('helpBox').style.visibility = this.help ? 'visible' : 'hidden';
         break;
 
       case 38: /* [up] */
@@ -465,20 +369,29 @@ function main() {
 
       default:
         if(event.which >= 49 && event.which <= 57) /* [1][2] ... [9] */
-          drawR = [1,2,3,5,8,13,21,34,55].valueOf()[event.which - 49];
+          this.drawR = [1,2,3,5,8,13,21,34,55].valueOf()[event.which - 49];
   }});
 
-  ca.run()
+
   setInterval(() => {    
     console.log(ca.counter, ' frames last second');
     ca.counter = 0;
   }, 1000);
 }
 
-if (
-    document.readyState === "complete" ||
-    (document.readyState !== "loading" && !document.documentElement.doScroll)
-) {
+
+
+function main() {
+  var canvas = document.querySelector("#glCanvas");  
+  var ca = new CA(canvas, 1)
+  console.log(ca)
+  var ctrl = new Controller(ca);
+  ca.run()  
+}
+
+
+if (document.readyState === "complete" ||
+    (document.readyState !== "loading" && !document.documentElement.doScroll)) {
   main();
 } else {
   document.addEventListener("DOMContentLoaded", main);
