@@ -34,10 +34,11 @@ function CA(canvas, scale) {
   console.log(canvas.width, canvas.height);
 
   // (try to) adapt state size to the screen size
-  const wPower = Math.floor(Math.log2(w))
-  const hPower = Math.floor(Math.log2(h))
-  this.statesize = new Float32Array([2**wPower, 2**hPower]);
-  this.interval = 10;
+  const power = Math.floor(Math.log2(screen.height))
+  this.statesize = new Float32Array([2**power, 2**power]);
+
+  // assuming lowRes => low comp. power
+  this.interval = power >= 10 ? 10 : 25;
 
   this.scale = 2;  
 
