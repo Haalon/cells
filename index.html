@@ -6,44 +6,25 @@
     <link rel="icon" type="image/jpg" href="favicon.jpg"/>
     <script src="lib/igloo.js"></script>
     <script src="index.js"></script>
-    <style>
-      .floatingDiv { 
-        position:absolute;  
-        z-index:10000; 
-        left:33%; 
-        top:250px; 
-        width:33%; 
-        background-color:#FFFC; 
-        min-width: 217px;
-        text-align: center;
-        border-radius: 10px 10px;
-        border:solid;
-        border-width:1px;
-        border-color:#000;
-        vertical-align:top;
-        padding:10px;}
-      html {height: 100vh}  /*otherwise it will have a white space at the bottom*/
-      body { margin: 0px; height: 100%;  overflow: hidden;}
-      canvas { display: block;  margin: 0px; }
-    </style>
+    <link href="style.css" rel="stylesheet">
   </head>
   <body>
-    <!-- Canvas dimensions must be powers of two. -->
-      <div class="floatingDiv" id="helpBox"">
+      <div class="floatingCenter ui" id="helpBox"">
         <h1>CONTROLS</h1>
-
-        [esc]: show / hide help <br>
-        [space]: pause / play <br>
-        [enter]: next step <br>
-        [<--]: reset to random <br>
-        [del]: reset to empty <br>
-        [LMB]: draw alive cell <br>
-        [shift+LMB]: erase cell <br>
-        [Mouse Wheel]: zoom <br>
-        [RMB]: pan around <br>
-        <mark>[h]: toggle history shader <br></mark>
-        <mark>[1]...[9]: change brush size<br></mark>
-        [F11]: fullscreen
+        <ul>
+          <li>[esc]: show / hide help</li>
+          <li>[space]: pause / play </li>
+          <li>[enter]: next step </li>
+          <li>[<--]: reset to random </li>
+          <li>[del]: reset to empty </li>
+          <li>[LMB]: draw alive cell </li>
+          <li>[shift+LMB]: erase cell </li>
+          <li>[Mouse Wheel]: zoom </li>
+          <li>[RMB]: pan around </li>
+          <li>[h]: toggle history shader </li>
+          <li>[1]...[9]: change brush size </li>
+          <li>[F11]: fullscreen </li>
+        </ul>
       </div>
       <canvas id="glCanvas"></canvas>  
   </body>

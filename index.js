@@ -32,10 +32,14 @@ function CA(canvas, scale) {
   this.viewsize = new Float32Array([w, h]);
   console.log(w,h);
   console.log(canvas.width, canvas.height);
-  this.statesize = new Float32Array([1024, 1024]);
 
-  this.scale = 2;
+  // (try to) adapt state size to the screen size
+  const wPower = Math.floor(Math.log2(w))
+  const hPower = Math.floor(Math.log2(h))
+  this.statesize = new Float32Array([2**wPower, 2**hPower]);
   this.interval = 10;
+
+  this.scale = 2;  
 
   this.offset = new Float32Array([0, 0]);
 
@@ -47,7 +51,7 @@ function CA(canvas, scale) {
   this.program_hist = igloo.program(src.vCopy, src.fHist);
   this.program_rule = igloo.program(src.vCopy, src.fRule);
 
-  this.hist = true;
+  this.hist = false;
 
   this.tex_temp = igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST)
     .blank(this.statesize[0], this.statesize[1]);
@@ -162,7 +166,8 @@ CA.prototype.set = function(state) {
 
 CA.prototype.setRandom = function(p) {
   var gl = this.igloo.gl, size = this.statesize[0] * this.statesize[1];
-  p = p == null ? 0.4 : p;
+  p = p == null ? 0.53 : p;
+  console.log(p);
   var rand = new Uint8Array(size);
   for (var i = 0; i < size; i++) {
     rand[i] = Math.random() < p ? 1 : 0;
