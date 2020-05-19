@@ -25,8 +25,8 @@ function CA(canvas, scale) {
     return;
   }
 
-  const w  = canvas.width = screen.width * window.devicePixelRatio;
-  const h = canvas.height = screen.height * window.devicePixelRatio;
+  const w = canvas.width = screen.width;
+  const h = canvas.height = screen.height;
   
   this.scale = scale;
   this.viewsize = new Float32Array([w, h]);
@@ -34,7 +34,8 @@ function CA(canvas, scale) {
   console.log(canvas.width, canvas.height);
 
   // (try to) adapt state size to the screen size
-  const power = Math.floor(Math.log2(screen.height))
+  const minDim = Math.min(h, w, h * window.devicePixelRatio, w * window.devicePixelRatio)
+  const power = Math.floor(Math.log2(minDim))
   this.statesize = new Float32Array([2**power, 2**power]);
 
   // assuming lowRes => low comp. power
