@@ -4,6 +4,7 @@ var src = {
   fCopy: 'glsl/copy.frag',
   fHist: 'glsl/hist.frag',
   fRule: 'glsl/rule.frag',
+  fDraw: 'glsl/draw.frag',
 }
 
 for(var key in src)
@@ -52,8 +53,9 @@ function CA(canvas, scale) {
   this.program_copy = igloo.program(src.vCopy, src.fCopy);
   this.program_hist = igloo.program(src.vCopy, src.fHist);
   this.program_rule = igloo.program(src.vCopy, src.fRule);
+  this.program_draw = igloo.program(src.vCopy, src.fDraw);
 
-  this.hist = false;
+  this.hist = true;
 
   this.tex_temp = igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST)
     .blank(this.statesize[0], this.statesize[1]);
@@ -168,7 +170,7 @@ CA.prototype.set = function(state) {
 
 CA.prototype.setRandom = function(p) {
   var gl = this.igloo.gl, size = this.statesize[0] * this.statesize[1];
-  p = p == null ? 0.53 : p;
+  p = p == null ? 0.4 : p;
   console.log(p);
   var rand = new Uint8Array(size);
   for (var i = 0; i < size; i++) {
@@ -178,7 +180,62 @@ CA.prototype.setRandom = function(p) {
   return this;
 };
 
-CA.prototype.pokeSqr = function(x, y, state, r) {
+CA.prototype._pokeByShader = function(x, y, val, r, mode) {
+  // console.log(origin, end, rad, val)
+  
+  x = mod(x / this.scale + this.offset[0], this.statesize[0]);
+  y = mod(y / this.scale + this.offset[1], this.statesize[1]);
+
+  x = Math.floor(x)
+  y = Math.floor(y)
+
+  var gl = this.igloo.gl;
+  this.frameBuffer.attach(this.tex_temp);
+  this.tex_curr.bind(0);
+  gl.viewport(0, 0, this.statesize[0], this.statesize[1]);
+  this.program_draw.use()
+    .attrib('a_position', this.buffer, 2)
+    .uniformi('state', 0)
+    .uniform('screenSize', this.statesize)
+    .uniform('u_pos', [x,y])
+    .uniform('u_val', val)
+    .uniform('u_rad', r-1)
+    .uniformi('u_mode', mode)
+    .draw(gl.TRIANGLE_STRIP, 4);
+
+  // this.tex_hist.copy(0,0,this.statesize[0], this.statesize[1]) // doesn't seem to work
+  this.swap();
+  if(this.hist) {
+    this.frameBuffer.attach(this.tex_temp);
+    this.tex_hist.bind(0);
+    gl.viewport(0, 0, this.statesize[0], this.statesize[1]);
+    this.program_draw.use()
+      .attrib('a_position', this.buffer, 2)
+      .uniformi('state', 0)
+      .uniform('screenSize', this.statesize)
+      .uniform('u_pos', [x,y])
+      .uniform('u_val', val)
+      .uniform('u_rad', r-1)
+      .uniformi('u_mode', mode)
+      .draw(gl.TRIANGLE_STRIP, 4);
+
+    var tmp = this.tex_hist;
+    this.tex_hist = this.tex_temp
+    this.tex_temp = tmp;
+  } 
+}
+
+CA.prototype.poke = function(pos, val, rad, mode) {
+  // _pokeByTexture is fastest with small r, but draws only squares
+  // and at such r all modes looks pretty much the same
+  // if a square mod, texture-method is faster until r is around 12
+  if(rad <= 2 || (mode==0 && rad < 12)) 
+    this._pokeByTexture(pos[0], pos[1], val, rad);
+  else
+    this._pokeByShader(pos[0], pos[1], val, rad, mode);
+}
+
+CA.prototype._pokeByTexture = function(x, y, state, r) {
   r = r || 1
 
   // shift so the mouse will be at the center of a drawn sqare
@@ -188,12 +245,11 @@ CA.prototype.pokeSqr = function(x, y, state, r) {
   x = Math.floor(x)
   y = Math.floor(y)
 
-
-  this.poke(x, y, state, 2*r - 1, 2*r - 1)
+  this._pokeRectByTexture(x, y, state, 2*r - 1, 2*r - 1)
 }
 
 
-CA.prototype.poke = function(x, y, state, w, h) {
+CA.prototype._pokeRectByTexture = function(x, y, state, w, h) {
 
   h = h || 1
   w = w || 1
@@ -202,12 +258,12 @@ CA.prototype.poke = function(x, y, state, w, h) {
   var ey = y + h - 1;
 
   if(ex >= this.statesize[0]) { // wrap around x
-    this.poke(0, y, state, ex - this.statesize[0] + 1, h)
+    this._pokeRectByTexture(0, y, state, ex - this.statesize[0] + 1, h)
     w = this.statesize[0] - x;
   }
 
   if(ey >= this.statesize[1]) { // wrap around y
-    this.poke(x, 0, state, w, ey - this.statesize[1] + 1)
+    this._pokeRectByTexture(x, 0, state, w, ey - this.statesize[1] + 1)
     h = this.statesize[1] - y;
   }
 
@@ -246,6 +302,7 @@ function Controller(ca) {
   this.lastPos = null;
   this.help = true;
   this.drawR = 1;
+  this.mode = 2;
 
 
   canvas.addEventListener('mousedown', (event) => {
@@ -255,7 +312,7 @@ function Controller(ca) {
 
     // left mbutton
     if(this.mousePressed == 1){
-      ca.pokeSqr(pos[0], pos[1], !event.shiftKey, this.drawR);
+      ca.poke(pos, !event.shiftKey*1.0, this.drawR, this.mode);
       ca.draw();
     }
   });
@@ -268,7 +325,7 @@ function Controller(ca) {
 
   canvas.addEventListener('mousemove', (event) => {
     var pos = ca.getMousePos(event);
-    if(this.mousePressed == 1) {      
+    if(this.mousePressed == 1) {
       var diag_dist = Math.max(Math.abs(pos[0]-this.lastPos[0]), Math.abs(pos[1]-this.lastPos[1]))
       // bigger radius ==> bigger steps
       // also if we are zoom in (small scale) steps should be smaller
@@ -278,7 +335,7 @@ function Controller(ca) {
           this.lastPos[0] + t * (pos[0] - this.lastPos[0]),
           this.lastPos[1] + t * (pos[1] - this.lastPos[1]),
         ]
-        ca.pokeSqr(point[0], point[1], !event.shiftKey, this.drawR);
+        ca.poke(point, !event.shiftKey*1.0, this.drawR, this.mode);
       }  
       ca.draw();
     }
@@ -378,6 +435,18 @@ function Controller(ca) {
       case 72: /* [h] */
         ca.hist = !ca.hist;
         ca.draw();
+        break;
+
+      case 67: /* [c] */
+        this.mode=2;
+        break;
+
+      case 83: /* [s] */
+        this.mode=0;
+        break;
+
+      case 82: /* [r] */
+        this.mode=1;
         break;
 
       default:

@@ -1,5 +1,5 @@
 
-// cells and worms 17
+// cells and worms 17 0.4
 var fStep = `
 precision mediump float;
 uniform sampler2D state;
@@ -577,7 +577,7 @@ void main(){
   }
 `;
 
-// zones and cells
+// zones and cells 0.3
 var fStep = `
 precision mediump float;
 uniform sampler2D state;
