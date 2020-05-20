@@ -29,12 +29,14 @@ html {
     padding:10px;
 }
 
-.controls {
+.column {
+    height: 100%;
     display: flex;
     flex-direction: column;
 }
 
 .row {
+    width: 100%;
     display: flex;
     flex-direction: row;
 }

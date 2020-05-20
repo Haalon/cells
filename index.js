@@ -404,13 +404,17 @@ function Controller(ca) {
 
 
   document.addEventListener('keydown', (event) =>{
+
     if(event.which == 27) /* [esc] */ {
       this.showUI = !this.showUI
       var elems = document.getElementsByClassName("ui")
       for(var e of elems)
-        e.style.visibility = this.showUI ? 'visible' : 'hidden';
+        e.style.display = this.showUI ? 'block' : 'none';
     }
-    if(this.showUI) return; // handle other keys only if UI is off
+
+
+    // we don't wanna react to other keys in inputs
+    if(document.activeElement != document.body && this.showUI) return; 
 
     switch (event.which) {
       case 38: /* [up] */
