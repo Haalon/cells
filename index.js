@@ -28,7 +28,6 @@ function CA(canvas, scale) {
 
   const w = canvas.width = screen.width;
   const h = canvas.height = screen.height;
-  
   this.scale = scale;
   this.viewsize = new Float32Array([w, h]);
   console.log(w,h);
@@ -50,9 +49,10 @@ function CA(canvas, scale) {
 
   this.buffer = igloo.array(Igloo.QUAD2)
 
+  this.rule = Igloo.fetch(src.fRule)
   this.program_copy = igloo.program(src.vCopy, src.fCopy);
   this.program_hist = igloo.program(src.vCopy, src.fHist);
-  this.program_rule = igloo.program(src.vCopy, src.fRule);
+  this.program_rule = igloo.program(src.vCopy, this.rule);
   this.program_draw = igloo.program(src.vCopy, src.fDraw);
 
   this.hist = true;
@@ -70,6 +70,20 @@ function CA(canvas, scale) {
 
   this.setRandom();
 }
+
+
+CA.prototype.setRule = function(ruleSrc) {
+  try {
+    var prog = this.igloo.program(src.vCopy, ruleSrc);
+  } catch (error) {
+    alert('compilation error:\n' + error.toString());
+    return;
+  } 
+
+  this.program_rule = prog;
+  this.rule = ruleSrc;
+}
+
 
 CA.prototype.run = function() {
   if(!this.timer) {
@@ -300,9 +314,12 @@ function Controller(ca) {
   var canvas = ca.canvas
   this.mousePressed = null;
   this.lastPos = null;
-  this.help = true;
+  this.showUI = true;
   this.drawR = 1;
   this.mode = 2;
+  this.ca = ca;
+
+  this.density = 0.5;
 
 
   canvas.addEventListener('mousedown', (event) => {
@@ -365,6 +382,7 @@ function Controller(ca) {
     if(event.ctrlKey)
       event.preventDefault()
 
+    console.log(event.deltaY)
     const delta = -Math.sign(event.deltaY);
     var scaleMult = 1.0;
     if (delta > 0 && ca.scale < 64)
@@ -386,12 +404,15 @@ function Controller(ca) {
 
 
   document.addEventListener('keydown', (event) =>{
-    switch (event.which) {
-      case 27: /* [esc] */
-        this.help = !this.help
-        document.getElementById('helpBox').style.visibility = this.help ? 'visible' : 'hidden';
-        break;
+    if(event.which == 27) /* [esc] */ {
+      this.showUI = !this.showUI
+      var elems = document.getElementsByClassName("ui")
+      for(var e of elems)
+        e.style.visibility = this.showUI ? 'visible' : 'hidden';
+    }
+    if(this.showUI) return; // handle other keys only if UI is off
 
+    switch (event.which) {
       case 38: /* [up] */
         ca.offset[1] += 1;
         ca.draw();
@@ -423,7 +444,7 @@ function Controller(ca) {
         break;
 
       case 8: /* [backspace] */
-        ca.setRandom();
+        ca.setRandom(this.density);
         ca.draw();
         break;
 
@@ -459,15 +480,31 @@ function Controller(ca) {
     console.log(ca.counter, ' frames last second');
     ca.counter = 0;
   }, 1000);
+
+  this.ruleText = document.getElementById('ruleText');
+  this.denseRange = document.getElementById('denseRange');
+  this.denseSpan = document.getElementById('denseSpan');
+  this.ruleText.value = ca.rule
+
+  this.setDensity(this.density);
 }
 
+Controller.prototype.setRule = function() {
+  this.ca.setRule(this.ruleText.value);
+}
 
+Controller.prototype.setDensity = function(val) {
+  this.density = val || this.denseRange.value;
+  if(val != null)
+    this.denseRange.value = val
+  this.denseSpan.innerHTML = this.density.toString()
+}
 
 function main() {
   var canvas = document.querySelector("#glCanvas");  
   var ca = new CA(canvas, 1)
   console.log(ca)
-  var ctrl = new Controller(ca);
+  document.ctrl = new Controller(ca);
   ca.run()  
 }
 
