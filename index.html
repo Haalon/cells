@@ -5,6 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="icon" type="image/jpg" href="favicon.jpg"/>
     <script src="lib/igloo.js"></script>
+    <script src="rules.js"></script>
     <script src="ca.js"></script>
     <script src="ui.js"></script>
     <link href="style.css" rel="stylesheet">
@@ -13,7 +14,7 @@
       <div class="floatingCenter ui" id="helpBox">
         <h1>CONTROLS</h1>
         <ul>
-          <li>[esc]: show / hide UI</li>
+          <li><b>[esc]: show / hide UI</b></li>
           <li>[space]: pause / play </li>
           <li>[enter]: next step </li>
           <li>[<--]: reset to random </li>
@@ -30,10 +31,16 @@
       </div>
       <div class="floatingRight ui" id="ruleBox">
         <div class="column">
+          
           <div class="row">
             <span style="width: 6em;">Density:</span>
             <input type="range" min="0" max="1" value="0.5" step="0.01" id="denseRange" class="slider" oninput="document.ctrl.setDensity()">
             <span id="denseSpan" style="width: 4em;">0.5</span>          
+          </div>
+          <div class="row">
+            <span style="width: 4em;">Rule:</span>
+            <select id="ruleSelect" onchange="document.ctrl.selectRule()" style="width: 100%;">
+            </select>  
           </div>
           <textarea id="ruleText" wrap="off"> </textarea>
           <button type="button" onclick="document.ctrl.setRule()">Compile</button>

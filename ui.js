@@ -178,17 +178,35 @@ function Controller(ca) {
   this.denseSpan = document.getElementById('denseSpan');
   this.ruleText.value = ca.rule
 
-  this.setDensity(this.density);
+  this.ruleSelect = document.getElementById('ruleSelect');
+  for(var i in rules) {
+    var c = document.createElement("option");
+    c.text = rules[i].name;
+    this.ruleSelect.options.add(c, -1); 
+  }
+
+  // use the first rule in rules.js
+  this.setDensity(rules[0].r);
 }
 
-Controller.prototype.setRule = function() {
-  this.ca.setRule(this.ruleText.value);
+Controller.prototype.setRule = function(src) {
+  src = src || this.ruleText.value;
+  this.ca.setRule(src);
+  if(src) this.ruleText.value = this.ca.rule;
 }
+
+
+Controller.prototype.selectRule = function() {
+  var i = this.ruleSelect.options.selectedIndex
+  this.setDensity(rules[i].r)
+  this.setRule(rules[i].path)
+}
+
 
 Controller.prototype.setDensity = function(val) {
   this.density = val || this.denseRange.value;
-  if(val != null)
-    this.denseRange.value = val
+  if(val)  this.denseRange.value = val;
+  
   this.denseSpan.innerHTML = this.density.toString()
 }
 

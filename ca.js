@@ -3,7 +3,6 @@ var src = {
   vCopy: 'glsl/copy.vert',
   fCopy: 'glsl/copy.frag',
   fHist: 'glsl/hist.frag',
-  fRule: 'glsl/rule.frag',
   fDraw: 'glsl/draw.frag',
 }
 
@@ -15,6 +14,8 @@ function mod(n, m) {
   return ((n % m) + m) % m;
 }
 
+// {!} use first rule from rules.js
+src.fRule = rules[0].path; 
 
 function CA(canvas, scale) {
   this.canvas = canvas;
@@ -68,11 +69,14 @@ function CA(canvas, scale) {
 
   this.counter = 0;
 
-  this.setRandom();
+  // {!} use first rule from rules.js again
+  this.setRandom(rules[0].r);
 }
 
 
 CA.prototype.setRule = function(ruleSrc) {
+  if(Igloo.looksLikeURL(ruleSrc)) ruleSrc = Igloo.fetch(ruleSrc);
+
   try {
     var prog = this.igloo.program(src.vCopy, ruleSrc);
   } catch (error) {
