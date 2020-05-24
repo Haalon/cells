@@ -56,6 +56,10 @@ const rules = [
 		r: 0.3,
 	},
 	{
+		name: 'trypophobic',
+		r: 0.3,
+	},
+	{
 		name: 'smoke walls',
 		r: 0.3,
 	},
