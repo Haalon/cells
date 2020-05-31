@@ -198,6 +198,36 @@ CA.prototype.setRandom = function(p) {
   return this;
 };
 
+CA.prototype.getImage = function() {
+
+  var gl = this.igloo.gl
+  var texture = this.hist ? this.tex_hist.texture : this.tex_curr.texture;
+  var framebuffer = gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+  // Read the contents of the framebuffer
+  var data = new Uint8Array(this.statesize[0] * this.statesize[1] * 4);
+  gl.readPixels(0, 0, this.statesize[0], this.statesize[1], gl.RGBA, gl.UNSIGNED_BYTE, data);
+  gl.deleteFramebuffer(framebuffer);
+
+  // Create a 2D canvas to store the result 
+  var canvas = document.createElement('canvas');
+  canvas.width = this.statesize[0];
+  canvas.height = this.statesize[1];
+  var context = canvas.getContext('2d');
+
+  // Copy the pixels to a 2D canvas
+  var imageData = context.createImageData(this.statesize[0], this.statesize[1]);
+  imageData.data.set(data);
+  context.putImageData(imageData, 0, 0);
+
+  var img = new Image();
+  img.src = canvas.toDataURL("image/png");
+
+  return img;
+}
+
 CA.prototype._pokeByShader = function(x, y, val, r, mode) {
   // console.log(origin, end, rad, val)
   

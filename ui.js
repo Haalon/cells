@@ -162,15 +162,19 @@ function Controller(ca) {
         this.mode=1;
         break;
 
+      case 9: /* [Tab] */
+        this.downloadImage();
+        break;
+
       default:
         if(event.which >= 49 && event.which <= 57) /* [1][2] ... [9] */
           this.drawR = [1,2,3,5,8,13,21,34,55].valueOf()[event.which - 49];
   }});
 
-
+  this.lastCounter = 0;
   setInterval(() => {    
-    console.log(ca.counter, ' frames last second');
-    ca.counter = 0;
+    console.log(ca.counter-this.lastCounter, ' frames last second');
+    this.lastCounter = ca.counter;
   }, 1000);
 
   this.ruleText = document.getElementById('ruleText');
@@ -208,6 +212,25 @@ Controller.prototype.setDensity = function(val) {
   if(val)  this.denseRange.value = val;
   
   this.denseSpan.innerHTML = this.density.toString()
+}
+
+Controller.prototype.downloadImage = function() {
+  var zerStr = this.ca.counter.toString();
+  var img = this.ca.getImage()
+
+  var link = document.createElement("a");
+  link.href = img.src;
+  link.download = "image" + zerStr + ".png";
+  link.style.display = "none";
+  var evt = new MouseEvent("click", {
+      "view": window,
+      "bubbles": true,
+      "cancelable": true
+  });
+
+  document.body.appendChild(link);
+  link.dispatchEvent(evt);
+  document.body.removeChild(link);
 }
 
 function main() {
