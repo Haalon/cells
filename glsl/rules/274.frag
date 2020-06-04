@@ -1,9 +1,9 @@
 precision mediump float;
-uniform sampler2D tex0_in;
-uniform vec2 tex_size;
+uniform sampler2D state;
+uniform vec2 screenSize;
 float cv(float fx,float fy){
     vec2 v=vec2(fx,fy);
-    float o=texture2D(tex0_in,(gl_FragCoord.xy+v)/tex_size).r;
+    float o=texture2D(state,(gl_FragCoord.xy+v)/screenSize).r;
     if(o>0.0){
         return 1.0;
     }else{

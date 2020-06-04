@@ -178,11 +178,12 @@ function Controller(ca) {
   }, 1000);
 
   this.ruleText = document.getElementById('ruleText');
-  this.denseRange = document.getElementById('denseRange');
-  this.denseSpan = document.getElementById('denseSpan');
   this.ruleText.value = ca.rule
 
+  this.denseRange = document.getElementById('denseRange');
+  this.denseLabel = document.getElementById('denseLabel');
   this.ruleSelect = document.getElementById('ruleSelect');
+  this.resetCheckbox = document.getElementById('resetCheckbox');
   for(var i in rules) {
     var c = document.createElement("option");
     c.text = rules[i].name;
@@ -196,7 +197,13 @@ function Controller(ca) {
 Controller.prototype.setRule = function(src) {
   src = src || this.ruleText.value;
   this.ca.setRule(src);
-  if(src) this.ruleText.value = this.ca.rule;
+  this.ruleText.value = this.ca.rule;
+
+  // reset the field if auto-reset is on
+  if(this.resetCheckbox.checked) {
+    this.ca.setRandom(this.density);
+    this.ca.draw();
+  }
 }
 
 
@@ -211,7 +218,7 @@ Controller.prototype.setDensity = function(val) {
   this.density = val || this.denseRange.value;
   if(val)  this.denseRange.value = val;
   
-  this.denseSpan.innerHTML = this.density.toString()
+  this.denseLabel.innerHTML = this.density.toString()
 }
 
 Controller.prototype.downloadImage = function() {

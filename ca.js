@@ -6,16 +6,21 @@ var src = {
   fDraw: 'glsl/draw.frag',
 }
 
-for(var key in src)
-  src[key] = url + src[key];
+// {!} use first rule from rules.js
+src.fRule = rules[0].path; 
+
+//server path to url
+function getFileUrl(path) {
+  return window.location.href + path;
+}
 
 // modulus, such that (-1) mod 10 == 9
 function mod(n, m) {
   return ((n % m) + m) % m;
 }
 
-// {!} use first rule from rules.js
-src.fRule = rules[0].path; 
+for(var key in src)
+  src[key] = getFileUrl(src[key]);
 
 function CA(canvas, scale) {
   this.canvas = canvas;
@@ -50,7 +55,10 @@ function CA(canvas, scale) {
 
   this.buffer = igloo.array(Igloo.QUAD2)
 
+
+  // we want to have entire rule src 
   this.rule = Igloo.fetch(src.fRule)
+
   this.program_copy = igloo.program(src.vCopy, src.fCopy);
   this.program_hist = igloo.program(src.vCopy, src.fHist);
   this.program_rule = igloo.program(src.vCopy, this.rule);
@@ -75,8 +83,17 @@ function CA(canvas, scale) {
 
 
 CA.prototype.setRule = function(ruleSrc) {
-  if(Igloo.looksLikeURL(ruleSrc)) ruleSrc = Igloo.fetch(ruleSrc);
+  if(this.timer) {
+    this.stop();
+    this.setRule_(ruleSrc);
+    this.run();
+  } else this.setRule_(ruleSrc);
+}
 
+
+CA.prototype.setRule_ = function(ruleSrc) {
+  if(Igloo.looksLikeURL(ruleSrc)) ruleSrc = Igloo.fetch(getFileUrl(ruleSrc));
+  
   try {
     var prog = this.igloo.program(src.vCopy, ruleSrc);
   } catch (error) {
