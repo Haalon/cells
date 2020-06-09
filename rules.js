@@ -1,8 +1,38 @@
 const rules = [
     {
+        name: "primordial soup 2",
+        r: 0.03,
+        path: "glsl/rules/primordial_soup_2.frag"
+    },
+    {
+        name: "growing mold",
+        r: 0.22,
+        path: "glsl/rules/growing_mold.frag"
+    },
+    {
+        name: "mitosis",
+        r: 0.37,
+        path: "glsl/rules/mitosis.frag"
+    },
+    {
+        name: "gears",
+        r: 0.38,
+        path: "glsl/rules/gears.frag"
+    },
+    {
         name: "chained cells",
         r: 0.45,
         path: "glsl/rules/chained_cells.frag"
+    },
+    {
+        name: "primordial soup",
+        r: 0.25,
+        path: "glsl/rules/primordial_soup.frag"
+    },
+    {
+        name: "cancer growth",
+        r: 0.58,
+        path: "glsl/rules/cancer_growth.frag"
     },
     {
         name: "quicksand",
@@ -10,9 +40,19 @@ const rules = [
         path: "glsl/rules/quicksand.frag"
     },
     {
+        name: "flammable gas",
+        r: 0.75,
+        path: "glsl/rules/flammable_gas.frag"
+    },
+    {
         name: "tentacles",
         r: 0.3,
         path: "glsl/rules/tentacles.frag"
+    },
+    {
+        name: "random walkers",
+        r: 0.5,
+        path: "glsl/rules/random_walkers.frag"
     },
     {
         name: "game of life",
@@ -33,6 +73,11 @@ const rules = [
         name: "cells and worms",
         r: 0.4,
         path: "glsl/rules/cells_and_worms.frag"
+    },
+    {
+        name: "cells and worms 2",
+        r: 0.35,
+        path: "glsl/rules/cells_and_worms_2.frag"
     },
     {
         name: "amoebas and cancer",
@@ -103,11 +148,6 @@ const rules = [
         name: "dotted amoebas",
         r: 0.5,
         path: "glsl/rules/dotted_amoebas.frag"
-    },
-    {
-        name: "mitosis",
-        r: 0.5,
-        path: "glsl/rules/mitosis.frag"
     },
     {
         name: "lazy builder",
