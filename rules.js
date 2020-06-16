@@ -90,6 +90,11 @@ const rules = [
         path: "glsl/rules/expanding_worms.frag"
     },
     {
+        name: "expanding worms 2",
+        r: 0.3,
+        path: "glsl/rules/expanding_worms_2.frag"
+    },
+    {
         name: "kaleidoscope",
         r: 0.93,
         path: "glsl/rules/kaleidoscope.frag"
