@@ -3,7 +3,7 @@ html {
 }
 
 .floatingCenter { 
-    position:absolute;  
+    position: absolute;  
     z-index:10000; 
     left:40%; 
     top:20%; 
@@ -11,7 +11,7 @@ html {
 }
 
 .floatingRight {
-    position:absolute;  
+    position: absolute;  
     z-index:10000; 
     right:0px; 
     width:33%;
