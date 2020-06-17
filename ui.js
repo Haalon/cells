@@ -243,7 +243,7 @@ Controller.prototype.downloadImage = function() {
 function main() {
   var canvas = document.querySelector("#glCanvas");  
   var ca = new CA(canvas, 1)
-  console.log(ca)
+  // console.log(ca)
   document.ctrl = new Controller(ca);
   ca.run()  
 }

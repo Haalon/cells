@@ -22,7 +22,7 @@ function mod(n, m) {
 for(var key in src)
   src[key] = getFileUrl(src[key]);
 
-function CA(canvas, scale) {
+function CA(canvas) {
   this.canvas = canvas;
   var igloo = this.igloo = new Igloo(canvas);
   var gl = igloo.gl;
@@ -31,21 +31,19 @@ function CA(canvas, scale) {
     alert("Unable to initialize WebGL. Your browser or machine may not support it.");
     return;
   }
-
-  const w = canvas.width = screen.width;
-  const h = canvas.height = screen.height;
-  this.scale = scale;
+  var ratio = window.devicePixelRatio || 1;
+  const w = canvas.width = screen.width * ratio;
+  const h = canvas.height = screen.height * ratio;
+  console.log(w,h,ratio);
+  this.scale = 1;
   this.viewsize = new Float32Array([w, h]);
-  console.log(w,h);
-  console.log(canvas.width, canvas.height);
 
   // (try to) adapt state size to the screen size
-  const minDim = Math.min(h, w, h * window.devicePixelRatio, w * window.devicePixelRatio)
+  const minDim = Math.min(h, w, h / ratio, w / ratio)
   const power = Math.floor(Math.log2(minDim))
   this.statesize = new Float32Array([2**power, 2**power]);
 
-  // assuming lowRes => low comp. power
-  this.interval = power >= 10 ? 10 : 25;
+  this.interval = 10;
 
   this.scale = 2;  
 
@@ -76,7 +74,7 @@ function CA(canvas, scale) {
   this.frameBuffer = igloo.framebuffer();
 
   this.counter = 0;
-
+  this.draw_time = Date.now();
   // {!} use first rule from rules.js again
   this.setRandom(rules[0].r);
 }
@@ -151,6 +149,11 @@ CA.prototype.step = function() {
 }
 
 CA.prototype.draw = function(afterStep) {
+  // do not draw faster
+  // if(Date.now() - this.draw_time < this.interval)
+  //   return;
+
+  this.draw_time = Date.now();
   var gl = this.igloo.gl;
 
   //
@@ -185,7 +188,6 @@ CA.prototype.draw = function(afterStep) {
     .uniform('u_offset', this.offset)
     .uniform('screenSize', this.statesize)
     .draw(gl.TRIANGLE_STRIP, 4);
-  this.lastTime = Date.now();
   return this;
 };
 

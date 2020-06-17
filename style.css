@@ -89,6 +89,7 @@ body {
 }
 
 canvas { 
+    touch-action: none;
     display: block;  
     margin: 0px; 
 }
