@@ -1,5 +1,10 @@
 const rules = [
     {
+        name: "chained cells",
+        r: 0.45,
+        path: "glsl/rules/chained_cells.frag"
+    },
+    {
         name: "primordial soup 2",
         r: 0.03,
         path: "glsl/rules/primordial_soup_2.frag"
