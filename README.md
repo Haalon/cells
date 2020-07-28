@@ -1,4 +1,4 @@
-# [cells](http://haalon.com\cells)
+# [cells](http://haalon.com/cells)
 
 Interactive cellular automata playground, that runs on your GPU
 
