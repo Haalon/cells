@@ -1,13 +1,18 @@
 const rules = [
     {
+        name: "hungry cells",
+        r: 0.53,
+        path: "glsl/rules/hungry_cells.frag"
+    },
+    {
         name: "chained cells",
         r: 0.45,
         path: "glsl/rules/chained_cells.frag"
     },
     {
-        name: "primordial soup 2",
-        r: 0.03,
-        path: "glsl/rules/primordial_soup_2.frag"
+        name: "mold",
+        r: 0.3,
+        path: "glsl/rules/mold.frag"
     },
     {
         name: "growing mold",
@@ -33,6 +38,16 @@ const rules = [
         name: "primordial soup",
         r: 0.25,
         path: "glsl/rules/primordial_soup.frag"
+    },
+    {
+        name: "primordial soup 2",
+        r: 0.03,
+        path: "glsl/rules/primordial_soup_2.frag"
+    },
+    {
+        name: "primordial soup 3",
+        r: 0.35,
+        path: "glsl/rules/primordial_soup_3.frag"
     },
     {
         name: "cancer growth",
@@ -108,11 +123,6 @@ const rules = [
         name: "region maker",
         r: 0.5,
         path: "glsl/rules/region_maker.frag"
-    },
-    {
-        name: "hungry cells",
-        r: 0.53,
-        path: "glsl/rules/hungry_cells.frag"
     },
     {
         name: "noisy cells",
