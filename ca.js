@@ -43,7 +43,7 @@ function CA(canvas) {
   const power = Math.floor(Math.log2(minDim))
   this.statesize = new Float32Array([2**power, 2**power]);
 
-  this.interval = 10;
+  this.interval = 20;
 
   this.scale = 2;  
 
