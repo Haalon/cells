@@ -1,11 +1,19 @@
 function Controller(ca) {  
   var canvas = ca.canvas
+  this.ca = ca;
+  
   this.mousePressed = null;
   this.lastPos = null;
   this.showUI = true;
   this.drawR = 1;
+
+  // drawing shape
+  // 0 - square
+  // 1 - rhombus
+  // 3 - circle
   this.mode = 2;
-  this.ca = ca;
+  this.drawRadiuses = [1,2,3,5,8,13,21,34,55];
+  
 
   this.density = 0.5;
 
@@ -57,7 +65,7 @@ function Controller(ca) {
     this.lastPos = pos;
   });
 
-
+  // prevent RMB menu from showon up
   canvas.addEventListener('contextmenu', (event) => {
     event.preventDefault();
     return false;
@@ -70,7 +78,6 @@ function Controller(ca) {
     if(event.ctrlKey)
       event.preventDefault()
 
-    console.log(event.deltaY)
     const delta = -Math.sign(event.deltaY);
     var scaleMult = 1.0;
     if (delta > 0 && ca.scale < 64)
@@ -99,8 +106,6 @@ function Controller(ca) {
       for(var e of elems)
         e.style.display = this.showUI ? 'block' : 'none';
     }
-
-
     // we don't wanna react to other keys in inputs
     if(document.activeElement != document.body && this.showUI) return; 
 
@@ -168,7 +173,7 @@ function Controller(ca) {
 
       default:
         if(event.which >= 49 && event.which <= 57) /* [1][2] ... [9] */
-          this.drawR = [1,2,3,5,8,13,21,34,55].valueOf()[event.which - 49];
+          this.drawR = this.drawRadiuses.valueOf()[event.which - 49];
   }});
 
   this.lastCounter = 0;
@@ -177,13 +182,20 @@ function Controller(ca) {
     this.lastCounter = ca.counter;
   }, 1000);
 
+  this.denseLabel = document.getElementById('denseLabel');
+  this.denseRange = document.getElementById('denseRange');
+  this.denseRange.addEventListener("input", e => this.setDensity());  
+
   this.ruleText = document.getElementById('ruleText');
   this.ruleText.value = ca.rule
-
-  this.denseRange = document.getElementById('denseRange');
-  this.denseLabel = document.getElementById('denseLabel');
   this.ruleSelect = document.getElementById('ruleSelect');
+  this.ruleSelect.addEventListener('change', (e) => this.selectRule());
   this.resetCheckbox = document.getElementById('resetCheckbox');
+
+  this.compileButton = document.getElementById('compileButton');
+  this.compileButton.addEventListener('click', (e) => this.setRule());
+
+  // rules are defined in 'rules.js'
   for(var i in rules) {
     var c = document.createElement("option");
     c.text = rules[i].name;
