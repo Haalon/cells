@@ -354,10 +354,44 @@ CA.prototype.getMousePos = function(event) {
   ];
 };
 
-// offsetless(!)
+// offsetless and continuous (!)
 CA.prototype.getStatePos = function(pos) {
   return [
     mod(pos[0] / this.scale, this.statesize[0]),
     mod(pos[1] / this.scale, this.statesize[1]),
   ]
+}
+
+CA.prototype.zoomAt = function(origin, mult) {
+
+  var oldStatePos = this.getStatePos(origin);
+  this.scale *= mult;
+  var newStatePos = this.getStatePos(origin);
+
+  // offset so the zoom's origin matches the mouse location
+  this.offset[0] += oldStatePos[0] - newStatePos[0];
+  this.offset[1] += oldStatePos[1] - newStatePos[1];
+}
+
+CA.prototype.shiftBy = function(dx, dy) {
+  dx = mod(dx / this.scale, this.statesize[0]);
+  dy = mod(dy / this.scale, this.statesize[1]);
+
+  this.offset[0] += dx;
+  this.offset[1] += dy;
+}
+
+CA.prototype.pokeLine = function(org, end, val, rad, mode) {
+  var diag_dist = Math.max(Math.abs(org[0]-end[0]), Math.abs(org[1]-end[1]));
+  
+  // bigger radius ==> bigger steps
+  // also if we are zoom in (small scale) steps should be smaller
+  for (var step = 0; step <= diag_dist; step += rad * this.scale) {
+    var t = diag_dist == 0 ? 0.0 : step / diag_dist;
+    var point = [
+      org[0] + t * (end[0] - org[0]),
+      org[1] + t * (end[1] - org[1]),
+    ]
+    this.poke(point, val, rad, mode);
+  }  
 }

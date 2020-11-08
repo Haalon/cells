@@ -39,44 +39,26 @@ function Controller(ca) {
   canvas.addEventListener('mousemove', (event) => {
     var pos = ca.getMousePos(event);
     if(this.mousePressed == 1) {
-      var diag_dist = Math.max(Math.abs(pos[0]-this.lastPos[0]), Math.abs(pos[1]-this.lastPos[1]))
-      // bigger radius ==> bigger steps
-      // also if we are zoom in (small scale) steps should be smaller
-      for (var step = 0; step <= diag_dist; step += this.drawR * ca.scale) {
-        var t = diag_dist == 0? 0.0 : step / diag_dist;
-        var point = [
-          this.lastPos[0] + t * (pos[0] - this.lastPos[0]),
-          this.lastPos[1] + t * (pos[1] - this.lastPos[1]),
-        ]
-        ca.poke(point, !event.shiftKey*1.0, this.drawR, this.mode);
-      }  
+      ca.pokeLine(this.lastPos, pos, !event.shiftKey*1.0, this.drawR, this.mode); 
       ca.draw();
     }
     // right mbutton
     else if(this.mousePressed == 3) {
-      var oldStatePos = ca.getStatePos(this.lastPos)
-      var newStatePos = ca.getStatePos(pos)
-
-      ca.offset[0] += oldStatePos[0] - newStatePos[0]
-      ca.offset[1] += oldStatePos[1] - newStatePos[1]
-
+      ca.shiftBy(this.lastPos[0] - pos[0], this.lastPos[1] - pos[1]);
       ca.draw();
     }
     this.lastPos = pos;
   });
 
-  // prevent RMB menu from showon up
+  // prevent RMB menu from showing up
   canvas.addEventListener('contextmenu', (event) => {
     event.preventDefault();
     return false;
   })
 
-
   canvas.addEventListener("wheel", event => {
 
-    // prevent blurry page zoom with ctrl + mwheel
-    if(event.ctrlKey)
-      event.preventDefault()
+    event.preventDefault();
 
     const delta = -Math.sign(event.deltaY);
     var scaleMult = 1.0;
@@ -86,20 +68,15 @@ function Controller(ca) {
     if (delta < 0 && ca.scale > 0.125)
       scaleMult = 0.5;
 
-    var oldStatePos = ca.getStatePos(this.lastPos)
-    ca.scale *= scaleMult;
-    var newStatePos = ca.getStatePos(this.lastPos)
-
-    // offset so the zoom's origin matches the mouse location
-    ca.offset[0] += oldStatePos[0] - newStatePos[0]
-    ca.offset[1] += oldStatePos[1] - newStatePos[1]
-
-    ca.draw();
+    if(scaleMult != 1)
+    {
+      ca.zoomAt(this.lastPos, scaleMult);
+      ca.draw();
+    }
   });
 
 
   document.addEventListener('keydown', (event) =>{
-
     if(event.which == 27) /* [esc] */ {
       this.showUI = !this.showUI
       var elems = document.getElementsByClassName("ui")
@@ -111,22 +88,22 @@ function Controller(ca) {
 
     switch (event.which) {
       case 38: /* [up] */
-        ca.offset[1] += 1;
+        ca.shiftBy(0,1);
         ca.draw();
         break;
 
       case 40: /* [down] */
-        ca.offset[1] -= 1;
+        ca.shiftBy(0,-1);
         ca.draw();
         break;
 
       case 37: /* [left] */
-        ca.offset[0] -= 1;
+        ca.shiftBy(-1,0);
         ca.draw();
         break;        
 
       case 39: /* [right] */
-        ca.offset[0] += 1;
+        ca.shiftBy(1,0);
         ca.draw();
         break;
 
@@ -153,6 +130,10 @@ function Controller(ca) {
       case 72: /* [h] */
         ca.hist = !ca.hist;
         ca.draw();
+        break;
+
+      case 76: /* [l] */
+        console.log(this.ca);
         break;
 
       case 67: /* [c] */
