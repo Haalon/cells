@@ -35,9 +35,17 @@
         <div class="column">
           
           <div class="row">
-            <label>Density:</label>
-            <input type="range" min="0" max="1" value="0.5" step="0.01" id="denseRange" class="slider">
-            <label id="denseLabel" >0.5</label>          
+            <div class="row">
+              <label>Density:</label>
+              <input type="range" min="0" max="1" value="0.5" step="0.01" id="denseRange" class="slider">
+              <label id="denseLabel">0.5</label>
+            </div>
+            <!-- <my-range  min="15" max="50" value="33" step="1" id="delay" name="Delay"></my-range> -->
+            <div class="row">
+              <label>FPS:</label>
+              <input type="range" min="10" max="100" value="35" step="5" id="FPSRange" class="slider">
+              <label id="FPSLabel">30</label>
+            </div>
           </div>
           <div class="row">
             <label style="width: 4em;">Rule:</label>

@@ -45,7 +45,7 @@ html {
 }
 
 .row {
-    margin-bottom: 12px;
+    margin: 2px;
     width: 100%;
     display: flex;
     flex-direction: row;

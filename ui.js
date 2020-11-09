@@ -16,6 +16,7 @@ function Controller(ca) {
   
 
   this.density = 0.5;
+  this.FPS = 30;
 
 
   canvas.addEventListener('mousedown', (event) => {
@@ -165,7 +166,11 @@ function Controller(ca) {
 
   this.denseLabel = document.getElementById('denseLabel');
   this.denseRange = document.getElementById('denseRange');
-  this.denseRange.addEventListener("input", e => this.setDensity());  
+  this.denseRange.addEventListener("input", e => this.setDensity(e.target.value));
+
+  this.FPSLabel = document.getElementById('FPSLabel');
+  this.FPSRange = document.getElementById('FPSRange');
+  this.FPSRange.addEventListener("input", e => this.setFPS(e.target.value));
 
   this.ruleText = document.getElementById('ruleText');
   this.ruleText.value = ca.rule
@@ -185,6 +190,7 @@ function Controller(ca) {
 
   // use the first rule in rules.js
   this.setDensity(rules[0].r);
+  this.setFPS(this.FPS);
 }
 
 Controller.prototype.setRule = function(src) {
@@ -208,10 +214,19 @@ Controller.prototype.selectRule = function() {
 
 
 Controller.prototype.setDensity = function(val) {
-  this.density = val || this.denseRange.value;
-  if(val)  this.denseRange.value = val;
-  
-  this.denseLabel.innerHTML = this.density.toString()
+  this.density = val
+  this.denseRange.value = val;  
+  this.denseLabel.innerHTML = val.toString()
+}
+
+
+Controller.prototype.setFPS = function(val) {
+  this.FPS = val
+  this.FPSRange.value = val;  
+  this.FPSLabel.innerHTML = val.toString()
+  this.ca.switch();
+  this.ca.interval = 1000 / val;
+  this.ca.switch();
 }
 
 Controller.prototype.downloadImage = function() {
