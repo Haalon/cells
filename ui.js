@@ -4,6 +4,8 @@ function Controller(ca) {
   
   this.mousePressed = null;
   this.lastPos = null;
+  this.shiftkey = false;
+
   this.showUI = true;
   this.drawR = 1;
 
@@ -18,9 +20,15 @@ function Controller(ca) {
   this.density = 0.5;
   this.FPS = 30;
 
+  this.ca.stepCallback = (ca_) => {
+    if(this.mousePressed == 1)
+      ca_.poke(this.lastPos, !this.shiftkey*1.0, this.drawR, this.mode);
+  }
+
 
   canvas.addEventListener('mousedown', (event) => {
     this.mousePressed = event.which
+    this.shiftkey = event.shiftKey;
     var pos = ca.getMousePos(event);
     this.lastPos = pos;
 
@@ -39,6 +47,7 @@ function Controller(ca) {
 
   canvas.addEventListener('mousemove', (event) => {
     var pos = ca.getMousePos(event);
+    this.shiftkey = event.shiftKey;
     if(this.mousePressed == 1) {
       ca.pokeLine(this.lastPos, pos, !event.shiftKey*1.0, this.drawR, this.mode); 
       ca.draw();

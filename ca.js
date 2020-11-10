@@ -64,6 +64,8 @@ function CA(canvas) {
 
   this.hist = true;
 
+  this.stepCallback = null;
+
   this.tex_temp = igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST)
     .blank(this.statesize[0], this.statesize[1]);
   this.tex_curr = igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST)
@@ -145,6 +147,10 @@ CA.prototype.step = function() {
     .draw(gl.TRIANGLE_STRIP, 4);
   this.swap();
   this.counter += 1;
+
+  if(this.stepCallback) 
+    this.stepCallback(this);
+  
   return this
 }
 
