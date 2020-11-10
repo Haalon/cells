@@ -19,8 +19,7 @@ function Controller() {
   const minDim = Math.min(h, w, h / ratio, w / ratio)
   const power = Math.floor(Math.log2(minDim))
 
-  this.stateW = 2**power;
-  this.stateH = 2**power;
+  this.stateW = this.stateH = 2**power;
 
   var ca = this.ca = new CA(canvas, this.stateW, this.stateH);
   
@@ -37,7 +36,7 @@ function Controller() {
   // 3 - circle
   this.mode = 2;
   this.drawRadiuses = [1,2,3,5,8,13,21,34,55];
-  this.stateSizes = [4,5,6,7,8,9,10,11].map(elem => 2**elem)
+  this.stateSizes = [4,5,6,7,8,9,10,11,12].map(elem => 2**elem)
   
 
   this.density = 0.5;

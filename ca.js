@@ -31,6 +31,7 @@ function CA(canvas, w, h) {
     alert("Unable to initialize WebGL. Your browser or machine may not support it.");
     return;
   }
+  gl.disable(gl.DEPTH_TEST);
 
     // we want to have entire rule src 
   this.rule = Igloo.fetch(src.fRule)
@@ -38,18 +39,14 @@ function CA(canvas, w, h) {
   this.program_copy = igloo.program(src.vCopy, src.fCopy);
   this.program_hist = igloo.program(src.vCopy, src.fHist);
   this.program_rule = igloo.program(src.vCopy, this.rule);
-  this.program_draw = igloo.program(src.vCopy, src.fDraw);
-  
-  this.scale = 1;
-  
+  this.program_draw = igloo.program(src.vCopy, src.fDraw);  
 
   this.interval = 20;
 
-  this.scale = 2;  
-
+  this.scale = 2;
   this.offset = new Float32Array([0, 0]);
 
-  gl.disable(gl.DEPTH_TEST);
+  
 
   this.buffer = igloo.array(Igloo.QUAD2)
 
@@ -71,7 +68,7 @@ function CA(canvas, w, h) {
 
 CA.prototype.setStateSize = function(w, h) {
   this.stop();
-  
+
   var gl = this.igloo.gl;
   this.statesize = new Float32Array([w, h]);
 
@@ -115,6 +112,10 @@ CA.prototype.run = function() {
     this.timer = setInterval(() => {
       this.step();
       this.draw(true);
+      // !!!!
+      // Without it webGl won't wait till all prev. tasks are done
+      // Resulting in severe freezes at high FPS
+      this.igloo.gl.finish();
     }, this.interval);
   }
 }
@@ -203,6 +204,7 @@ CA.prototype.draw = function(afterStep) {
 
 
 CA.prototype.set = function(state) {
+  this.counter = 0;
   var gl = this.igloo.gl;
   var rgba = new Uint8Array(this.statesize[0] * this.statesize[1] * 4);
   for (var i = 0; i < state.length; i++) {
