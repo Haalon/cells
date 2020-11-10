@@ -19,6 +19,10 @@ function mod(n, m) {
   return ((n % m) + m) % m;
 }
 
+function mod2(n2, m2) {
+  return [mod(n2[0], m2[0]), mod(n2[1], m2[1])];
+}
+
 for(var key in src)
   src[key] = getFileUrl(src[key]);
 
@@ -259,15 +263,10 @@ CA.prototype.getImage = function() {
   return img;
 }
 
-CA.prototype._pokeByShader = function(x, y, val, r, mode) {
+CA.prototype._poke2 = function(org, end, val, r, mode) {
   // console.log(origin, end, rad, val)
-  
-  x = mod(x / this.scale + this.offset[0], this.statesize[0]);
-  y = mod(y / this.scale + this.offset[1], this.statesize[1]);
-
-  x = Math.floor(x)
-  y = Math.floor(y)
-
+  org = [Math.floor(org[0]) + 0.5, Math.floor(org[1]) + 0.5];
+  end = [Math.floor(end[0]) + 0.5, Math.floor(end[1]) + 0.5];
   var gl = this.igloo.gl;
   this.frameBuffer.attach(this.tex_temp);
   this.tex_curr.bind(0);
@@ -276,7 +275,8 @@ CA.prototype._pokeByShader = function(x, y, val, r, mode) {
     .attrib('a_position', this.buffer, 2)
     .uniformi('state', 0)
     .uniform('screenSize', this.statesize)
-    .uniform('u_pos', [x,y])
+    .uniform('u_org', org)
+    .uniform('u_end', end)
     .uniform('u_val', val)
     .uniform('u_rad', r-1)
     .uniformi('u_mode', mode)
@@ -292,7 +292,8 @@ CA.prototype._pokeByShader = function(x, y, val, r, mode) {
       .attrib('a_position', this.buffer, 2)
       .uniformi('state', 0)
       .uniform('screenSize', this.statesize)
-      .uniform('u_pos', [x,y])
+      .uniform('u_org', org)
+      .uniform('u_end', end)
       .uniform('u_val', val)
       .uniform('u_rad', r-1)
       .uniformi('u_mode', mode)
@@ -304,59 +305,71 @@ CA.prototype._pokeByShader = function(x, y, val, r, mode) {
   } 
 }
 
-CA.prototype.poke = function(pos, val, rad, mode) {
-  // _pokeByTexture is fastest with small r, but draws only squares
-  // and at such r all modes looks pretty much the same
-  // if a square mod, texture-method is faster until r is around 12
-  if(rad <= 2 || (mode==0 && rad < 12)) 
-    this._pokeByTexture(pos[0], pos[1], val, rad);
-  else
-    this._pokeByShader(pos[0], pos[1], val, rad, mode);
+CA.prototype.poke = function(pos, val, rad, mode) {  
+  this.poke2(pos, pos, val, rad, mode);
 }
 
-CA.prototype._pokeByTexture = function(x, y, state, r) {
-  r = r || 1
+CA.prototype.poke2 = function(org, end, val, rad, mode) {
 
-  // shift so the mouse will be at the center of a drawn sqare
-  x = mod(x / this.scale + this.offset[0] - r + 1, this.statesize[0]);
-  y = mod(y / this.scale + this.offset[1] - r + 1, this.statesize[1]);
+  const x1 = mod(org[0] / this.scale + this.offset[0], this.statesize[0]);
+  const y1 = mod(org[1] / this.scale + this.offset[1], this.statesize[1]);
 
-  x = Math.floor(x)
-  y = Math.floor(y)
+  const dx = (end[0] - org[0]) / this.scale;
+  const dy = (end[1] - org[1]) / this.scale;
 
-  this._pokeRectByTexture(x, y, state, 2*r - 1, 2*r - 1)
+  const sgnx = dx > 0 ? 1 : -1;
+  const sgny = dy > 0 ? 1 : -1;
+
+  var mx = dx > 0 ? this.statesize[0] : 0;
+  var my = dy > 0 ? this.statesize[1] : 0;
+
+  var t = 0, tx, ty, x_edge, y_edge;
+  var lastpos = [x1, y1];
+  var last = null;
+  
+  const e = 0.05;
+  const unEdge = (p, axis, end) => {
+    if(axis == 'x')
+      return mod2([p[0] + sgnx * (end ? -e : e), p[1]], this.statesize);
+
+    if(axis == 'y')
+      return mod2([p[0], p[1] + sgny * (end ? -e : e)], this.statesize);
+
+    return mod2(p, this.statesize);
+  }
+
+  // we wanna solve for t:
+  // x1 + t*(x2-x1) = mx
+  // y1 + t*(y2-y1) = my
+  // this describes intersection of the given line with the field borders
+  while(t < 1) {
+    tx = dx == 0 ? 2 : (mx - x1) / dx;
+    ty = dy == 0 ? 2 : (my - y1) / dy;
+    if(tx >= 1 && ty >= 1)  break;
+
+    if(tx > ty) {
+      // Y border intersected      
+      t = ty;
+      y_edge = my;
+      x_edge = x1 + t * dx;
+      my += dy > 0 ? this.statesize[1] : -this.statesize[1];
+      this._poke2(unEdge(lastpos, last, 0), unEdge([x_edge, y_edge], 'y', 1), val, rad, mode);
+      last = 'y';
+    }
+    else {
+      // X border intersected
+      t = tx;
+      y_edge = y1 + t * dy;
+      x_edge = mx;
+      mx += dx > 0 ? this.statesize[0] : -this.statesize[0];
+      this._poke2(unEdge(lastpos, last, 0), unEdge([x_edge, y_edge], 'x', 1), val, rad, mode);
+      last = 'x';
+    }
+    
+    lastpos = [x_edge, y_edge];
+  }
+  this._poke2(unEdge(lastpos, last, 0), unEdge([x1+dx, y1+dy]), val, rad, mode);
 }
-
-
-CA.prototype._pokeRectByTexture = function(x, y, state, w, h) {
-
-  h = h || 1
-  w = w || 1
-
-  var ex = x + w - 1;
-  var ey = y + h - 1;
-
-  if(ex >= this.statesize[0]) { // wrap around x
-    this._pokeRectByTexture(0, y, state, ex - this.statesize[0] + 1, h)
-    w = this.statesize[0] - x;
-  }
-
-  if(ey >= this.statesize[1]) { // wrap around y
-    this._pokeRectByTexture(x, 0, state, w, ey - this.statesize[1] + 1)
-    h = this.statesize[1] - y;
-  }
-
-  if(w*h <= 0)
-    return 
-
-  var gl = this.igloo.gl,
-  v = state * 255;
-  var arr = new Array(w*h).fill([v, v, v, 255]).flat();
-  this.tex_curr.subset(arr, x, y, w, h);
-  if(this.hist)
-    this.tex_hist.subset(arr, x, y, w, h);
-  return this;
-};
 
 CA.prototype.getMousePos = function(event) {
   var rect = this.canvas.getBoundingClientRect();
@@ -391,19 +404,4 @@ CA.prototype.shiftBy = function(dx, dy) {
 
   this.offset[0] += dx;
   this.offset[1] += dy;
-}
-
-CA.prototype.pokeLine = function(org, end, val, rad, mode) {
-  var diag_dist = Math.max(Math.abs(org[0]-end[0]), Math.abs(org[1]-end[1]));
-  
-  // bigger radius ==> bigger steps
-  // also if we are zoom in (small scale) steps should be smaller
-  for (var step = 0; step <= diag_dist; step += rad * this.scale) {
-    var t = diag_dist == 0 ? 0.0 : step / diag_dist;
-    var point = [
-      org[0] + t * (end[0] - org[0]),
-      org[1] + t * (end[1] - org[1]),
-    ]
-    this.poke(point, val, rad, mode);
-  }  
 }

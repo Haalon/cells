@@ -69,9 +69,10 @@ function Controller() {
 
   canvas.addEventListener('mousemove', (event) => {
     var pos = ca.getMousePos(event);
+    // console.log("mouse", pos)
     this.shiftkey = event.shiftKey;
     if(this.mousePressed == 1) {
-      ca.pokeLine(this.lastPos, pos, !event.shiftKey*1.0, this.drawR, this.mode); 
+      ca.poke2(this.lastPos, pos, !event.shiftKey*1.0, this.drawR, this.mode); 
       ca.draw();
     }
     // right mbutton
@@ -89,7 +90,6 @@ function Controller() {
   })
 
   canvas.addEventListener("wheel", event => {
-
     event.preventDefault();
 
     const delta = -Math.sign(event.deltaY);
