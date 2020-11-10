@@ -1,6 +1,28 @@
-function Controller(ca) {  
-  var canvas = ca.canvas
-  this.ca = ca;
+function setOption(selectElement, value) {
+    return [...selectElement.options].some((option, index) => {
+        if (option.value == value) {
+            selectElement.selectedIndex = index;
+            return true;
+        }
+    });
+}
+
+function Controller() {
+  var canvas = document.querySelector("#glCanvas");
+
+  var ratio = window.devicePixelRatio || 1;
+  const w = canvas.width = screen.width * ratio;
+  const h = canvas.height = screen.height * ratio;
+  console.log(w,h,ratio);
+
+  // (try to) adapt state size to the screen size
+  const minDim = Math.min(h, w, h / ratio, w / ratio)
+  const power = Math.floor(Math.log2(minDim))
+
+  this.stateW = 2**power;
+  this.stateH = 2**power;
+
+  var ca = this.ca = new CA(canvas, this.stateW, this.stateH);
   
   this.mousePressed = null;
   this.lastPos = null;
@@ -15,6 +37,7 @@ function Controller(ca) {
   // 3 - circle
   this.mode = 2;
   this.drawRadiuses = [1,2,3,5,8,13,21,34,55];
+  this.stateSizes = [4,5,6,7,8,9,10,11].map(elem => 2**elem)
   
 
   this.density = 0.5;
@@ -183,13 +206,14 @@ function Controller(ca) {
 
   this.ruleText = document.getElementById('ruleText');
   this.ruleText.value = ca.rule
-  this.ruleSelect = document.getElementById('ruleSelect');
-  this.ruleSelect.addEventListener('change', (e) => this.selectRule());
+  
   this.resetCheckbox = document.getElementById('resetCheckbox');
 
   this.compileButton = document.getElementById('compileButton');
   this.compileButton.addEventListener('click', (e) => this.setRule());
 
+  this.ruleSelect = document.getElementById('ruleSelect');
+  this.ruleSelect.addEventListener('change', (e) => this.selectRule());
   // rules are defined in 'rules.js'
   for(var i in rules) {
     var c = document.createElement("option");
@@ -197,9 +221,37 @@ function Controller(ca) {
     this.ruleSelect.options.add(c, -1); 
   }
 
+  this.heightSelect = document.getElementById('heightSelect');
+  this.widthSelect = document.getElementById('widthSelect');
+  for(var s of this.stateSizes) {
+    var ch = document.createElement("option");
+    var cw = document.createElement("option");
+    ch.text = cw.text = s.toString();
+    this.heightSelect.options.add(ch, -1);
+    this.widthSelect.options.add(cw, -1);
+  }
+  this.widthSelect.addEventListener('change', 
+    (e) => this.setStateSize(e.target.value, null));
+  this.heightSelect.addEventListener('change', 
+    (e) => this.setStateSize(null, e.target.value));
+  
+  setOption(this.heightSelect, this.stateH);
+  setOption(this.widthSelect, this.stateW);
+
   // use the first rule in rules.js
   this.setDensity(rules[0].r);
   this.setFPS(this.FPS);
+  // Start the damn thing!
+  this.ca.run()  
+}
+
+Controller.prototype.setStateSize = function(w, h) {
+  w = w || this.ca.statesize[0];
+  h = h || this.ca.statesize[1];
+
+  this.ca.setStateSize(w,h);
+  this.ca.setRandom(this.density);
+  this.ca.draw();
 }
 
 Controller.prototype.setRule = function(src) {
@@ -258,11 +310,9 @@ Controller.prototype.downloadImage = function() {
 }
 
 function main() {
-  var canvas = document.querySelector("#glCanvas");  
-  var ca = new CA(canvas, 1)
   // console.log(ca)
-  document.ctrl = new Controller(ca);
-  ca.run()  
+  document.ctrl = new Controller();
+  
 }
 
 

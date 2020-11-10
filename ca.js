@@ -22,7 +22,7 @@ function mod(n, m) {
 for(var key in src)
   src[key] = getFileUrl(src[key]);
 
-function CA(canvas) {
+function CA(canvas, w, h) {
   this.canvas = canvas;
   var igloo = this.igloo = new Igloo(canvas);
   var gl = igloo.gl;
@@ -31,17 +31,17 @@ function CA(canvas) {
     alert("Unable to initialize WebGL. Your browser or machine may not support it.");
     return;
   }
-  var ratio = window.devicePixelRatio || 1;
-  const w = canvas.width = screen.width * ratio;
-  const h = canvas.height = screen.height * ratio;
-  console.log(w,h,ratio);
-  this.scale = 1;
-  this.viewsize = new Float32Array([w, h]);
 
-  // (try to) adapt state size to the screen size
-  const minDim = Math.min(h, w, h / ratio, w / ratio)
-  const power = Math.floor(Math.log2(minDim))
-  this.statesize = new Float32Array([2**power, 2**power]);
+    // we want to have entire rule src 
+  this.rule = Igloo.fetch(src.fRule)
+
+  this.program_copy = igloo.program(src.vCopy, src.fCopy);
+  this.program_hist = igloo.program(src.vCopy, src.fHist);
+  this.program_rule = igloo.program(src.vCopy, this.rule);
+  this.program_draw = igloo.program(src.vCopy, src.fDraw);
+  
+  this.scale = 1;
+  
 
   this.interval = 20;
 
@@ -53,25 +53,13 @@ function CA(canvas) {
 
   this.buffer = igloo.array(Igloo.QUAD2)
 
-
-  // we want to have entire rule src 
-  this.rule = Igloo.fetch(src.fRule)
-
-  this.program_copy = igloo.program(src.vCopy, src.fCopy);
-  this.program_hist = igloo.program(src.vCopy, src.fHist);
-  this.program_rule = igloo.program(src.vCopy, this.rule);
-  this.program_draw = igloo.program(src.vCopy, src.fDraw);
-
   this.hist = true;
 
   this.stepCallback = null;
 
-  this.tex_temp = igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST)
-    .blank(this.statesize[0], this.statesize[1]);
-  this.tex_curr = igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST)
-    .blank(this.statesize[0], this.statesize[1]);
-  this.tex_hist = igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST)
-    .blank(this.statesize[0], this.statesize[1]);
+  this.viewsize = new Float32Array([canvas.width, canvas.height]);
+  
+  this.setStateSize(w, h)
 
   this.frameBuffer = igloo.framebuffer();
 
@@ -79,6 +67,22 @@ function CA(canvas) {
   this.draw_time = Date.now();
   // {!} use first rule from rules.js again
   this.setRandom(rules[0].r);
+}
+
+CA.prototype.setStateSize = function(w, h) {
+  this.stop();
+  
+  var gl = this.igloo.gl;
+  this.statesize = new Float32Array([w, h]);
+
+  this.tex_temp = this.igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST)
+    .blank(this.statesize[0], this.statesize[1]);
+  this.tex_curr = this.igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST)
+    .blank(this.statesize[0], this.statesize[1]);
+  this.tex_hist = this.igloo.texture(null, gl.RGBA, gl.REPEAT, gl.NEAREST)
+    .blank(this.statesize[0], this.statesize[1]);
+
+  this.run();
 }
 
 
@@ -150,7 +154,7 @@ CA.prototype.step = function() {
 
   if(this.stepCallback) 
     this.stepCallback(this);
-  
+
   return this
 }
 
