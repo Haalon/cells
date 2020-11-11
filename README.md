@@ -7,8 +7,9 @@ Inspired by this [blog](https://softologyblog.wordpress.com/2018/03/31/more-expl
 ## Features
 * Infinite periodic tiling
 * Pan / zoom camera
-* Draw / erase with various brush sizes and shapes
+* Smooth drawing\erasing
+* Various brushes sizes and shapes
 * Set of interesting built-in rules to choose
-* Modify existing or write new rules in glsl
-* Save tile image on disk
-* Smooth history shader
+* Ability to modify existing rules or write new ones in glsl
+* Saving of tile image on disk
+* Smoothing history shader
