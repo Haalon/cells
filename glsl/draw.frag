@@ -1,8 +1,6 @@
 precision mediump float;
 uniform sampler2D state;
 uniform vec2 screenSize;
-// uniform vec2 u_offset;
-// uniform float u_scale;
 
 uniform vec2 u_org;
 uniform vec2 u_end;
@@ -14,11 +12,11 @@ uniform int u_mode;
 
 float d_1(vec2 o, vec2 e) {
     vec2 delta = abs(e - o);
-    if(delta.x > 0.5 * screenSize.x)
-        delta.x = screenSize.x - delta.x;
+    // if(delta.x > 0.5 * screenSize.x)
+    //     delta.x = screenSize.x - delta.x;
 
-    if(delta.y > 0.5 * screenSize.y)
-        delta.y = screenSize.y - delta.y;
+    // if(delta.y > 0.5 * screenSize.y)
+    //     delta.y = screenSize.y - delta.y;
 
     return delta.x + delta.y;
 }
@@ -26,11 +24,11 @@ float d_1(vec2 o, vec2 e) {
 
 float d_2(vec2 o, vec2 e) {
     vec2 delta = abs(e - o);
-    if(delta.x > 0.5 * screenSize.x)
-        delta.x = screenSize.x - delta.x;
+    // if(delta.x > 0.5 * screenSize.x)
+    //     delta.x = screenSize.x - delta.x;
 
-    if(delta.y > 0.5 * screenSize.y)
-        delta.y = screenSize.y - delta.y;
+    // if(delta.y > 0.5 * screenSize.y)
+    //     delta.y = screenSize.y - delta.y;
 
     delta = delta * delta;
     return sqrt(delta.x + delta.y);
@@ -38,11 +36,11 @@ float d_2(vec2 o, vec2 e) {
 
 float d_inf(vec2 o, vec2 e) {
     vec2 delta = abs(e - o);
-    if(delta.x > 0.5 * screenSize.x)
-        delta.x = screenSize.x - delta.x;
+    // if(delta.x > 0.5 * screenSize.x)
+    //     delta.x = screenSize.x - delta.x;
 
-    if(delta.y > 0.5 * screenSize.y)
-        delta.y = screenSize.y - delta.y;
+    // if(delta.y > 0.5 * screenSize.y)
+    //     delta.y = screenSize.y - delta.y;
 
     return max(delta.x, delta.y);
 }
@@ -115,19 +113,50 @@ float line_dist(vec2 v, vec2 w, vec2 p) {
 
 void main(){
 
-    // vec2 curr_pos = floor( / u_scale + u_offset);
     float outval = texture2D(state, gl_FragCoord.xy / screenSize).r;
 
-    if(line_dist(u_org, u_end, gl_FragCoord.xy) <= u_rad + 0.5)
+    if(line_dist(u_org, u_end, gl_FragCoord.xy) <= u_rad + 0.55)
+    {
         outval = u_val;
+        gl_FragColor=vec4(outval,outval,outval,1.0);
+        return;
+    }
 
-    // if(u_mode == 0 && d_inf(gl_FragCoord.xy, u_pos) <= u_rad)
-    //     outval = u_val;
-    // else if(u_mode == 1 && d_1(gl_FragCoord.xy, u_pos) <= u_rad)
-    //     outval = u_val;
-    // else if(u_mode == 2 && d_2(gl_FragCoord.xy, u_pos) <= u_rad + 0.5)
-    //     outval = u_val;
-    
-    
+    float dx = 0.0;
+    float dy = 0.0;
+    vec2 tempOrg = u_org;
+    vec2 tempEnd = u_end;
+
+    if(gl_FragCoord.x <= u_rad)
+        dx = screenSize.x;
+    else if(gl_FragCoord.x >= screenSize.x - u_rad)
+        dx = -screenSize.x;
+
+    if(dx!=0.0 && line_dist(u_org, u_end, gl_FragCoord.xy + vec2(dx,0)) <= u_rad + 0.55)
+    {
+        outval = u_val;
+        gl_FragColor=vec4(outval,outval,outval,1.0);
+        return;
+    }
+
+    if(gl_FragCoord.y <= u_rad)
+        dy = screenSize.y;
+    else if(gl_FragCoord.y >= screenSize.y - u_rad)
+        dy = -screenSize.y;
+
+    if(dy!=0.0 && line_dist(u_org, u_end, gl_FragCoord.xy + vec2(0,dy)) <= u_rad + 0.55)
+    {
+        outval = u_val;
+        gl_FragColor=vec4(outval,outval,outval,1.0);
+        return;
+    }
+
+    if(dy!=0.0 && dx!=0.0 && line_dist(u_org, u_end, gl_FragCoord.xy + vec2(dx,dy)) <= u_rad + 0.55)
+    {
+        outval = u_val;
+        gl_FragColor=vec4(outval,outval,outval,1.0);
+        return;
+    }
+
     gl_FragColor=vec4(outval,outval,outval,1.0);
 }

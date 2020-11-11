@@ -164,6 +164,11 @@ function Controller() {
         ca.draw();
         break;
 
+      case 78: /* [n] */
+        ca.offset = [0,0];
+        ca.draw();
+        break;
+
       case 76: /* [l] */
         console.log(this.ca);
         break;

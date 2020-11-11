@@ -310,7 +310,7 @@ CA.prototype.poke = function(pos, val, rad, mode) {
 }
 
 CA.prototype.poke2 = function(org, end, val, rad, mode) {
-
+  
   const x1 = mod(org[0] / this.scale + this.offset[0], this.statesize[0]);
   const y1 = mod(org[1] / this.scale + this.offset[1], this.statesize[1]);
 
@@ -329,11 +329,28 @@ CA.prototype.poke2 = function(org, end, val, rad, mode) {
   
   const e = 0.05;
   const unEdge = (p, axis, end) => {
+
     if(axis == 'x')
       return mod2([p[0] + sgnx * (end ? -e : e), p[1]], this.statesize);
 
     if(axis == 'y')
       return mod2([p[0], p[1] + sgny * (end ? -e : e)], this.statesize);
+
+    if(axis == 'xy')
+      return mod2([p[0] + sgnx * (end ? -e : e), p[1] + sgny * (end ? -e : e)], this.statesize);
+
+    // // even if axis i
+    // if(p[0] == this.statesize[0])
+    //   p[0] = this.statesize[0] + e;
+
+    // if(p[1] == this.statesize[1])
+    //   p[1] = this.statesize[1] + e;
+
+    // if(p[0] <= 0)
+    //   p[0] = e;
+
+    // if(p[1] <= 0)
+    //   p[1] = e;
 
     return mod2(p, this.statesize);
   }
@@ -345,7 +362,7 @@ CA.prototype.poke2 = function(org, end, val, rad, mode) {
   while(t < 1) {
     tx = dx == 0 ? 2 : (mx - x1) / dx;
     ty = dy == 0 ? 2 : (my - y1) / dy;
-    if(tx >= 1 && ty >= 1)  break;
+    if(tx > 1 && ty > 1)  break;
 
     if(tx > ty) {
       // Y border intersected      
@@ -356,7 +373,8 @@ CA.prototype.poke2 = function(org, end, val, rad, mode) {
       this._poke2(unEdge(lastpos, last, 0), unEdge([x_edge, y_edge], 'y', 1), val, rad, mode);
       last = 'y';
     }
-    else {
+
+    if(tx < ty) {
       // X border intersected
       t = tx;
       y_edge = y1 + t * dy;
@@ -365,9 +383,26 @@ CA.prototype.poke2 = function(org, end, val, rad, mode) {
       this._poke2(unEdge(lastpos, last, 0), unEdge([x_edge, y_edge], 'x', 1), val, rad, mode);
       last = 'x';
     }
-    
+
+    if(tx == ty) {
+      // Corner intersected
+      t = tx;
+      y_edge = my;
+      x_edge = mx;
+      mx += dx > 0 ? this.statesize[0] : -this.statesize[0];
+      my += dy > 0 ? this.statesize[1] : -this.statesize[1];
+      this._poke2(unEdge(lastpos, last, 0), unEdge([x_edge, y_edge], 'xy', 1), val, rad, mode);
+      last = 'xy';
+    }
     lastpos = [x_edge, y_edge];
   }
+    console.log("begin")
+  console.log(org,end);
+  console.log([x1,y1], [x1+dx, y1+dy])
+  console.log(dx, dy)
+  console.log(mx, my)
+  console.log(tx, ty)  
+  console.log(unEdge(lastpos, last, 0), unEdge([x1+dx, y1+dy]));
   this._poke2(unEdge(lastpos, last, 0), unEdge([x1+dx, y1+dy]), val, rad, mode);
 }
 
