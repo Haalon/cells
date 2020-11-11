@@ -383,7 +383,12 @@ CA.prototype.poke2 = function(org, end, val, rad, mode) {
     }
     lastpos = [x_edge, y_edge];
   }
-  this._poke2(unEdge(lastpos, last, 0), unEdge([x1+dx, y1+dy]), val, rad, mode);
+
+  // if t==1 then it have been already drawn in the loop above
+  // also avoids bugs caused by unEdge([x1+dx, y1+dy]) 
+  // when x+dx (or other one) is 0 or statesize
+  if(t!=1)
+    this._poke2(unEdge(lastpos, last, 0), unEdge([x1+dx, y1+dy]), val, rad, mode);
 }
 
 CA.prototype.getMousePos = function(event) {
