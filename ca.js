@@ -339,19 +339,6 @@ CA.prototype.poke2 = function(org, end, val, rad, mode) {
     if(axis == 'xy')
       return mod2([p[0] + sgnx * (end ? -e : e), p[1] + sgny * (end ? -e : e)], this.statesize);
 
-    // // even if axis i
-    // if(p[0] == this.statesize[0])
-    //   p[0] = this.statesize[0] + e;
-
-    // if(p[1] == this.statesize[1])
-    //   p[1] = this.statesize[1] + e;
-
-    // if(p[0] <= 0)
-    //   p[0] = e;
-
-    // if(p[1] <= 0)
-    //   p[1] = e;
-
     return mod2(p, this.statesize);
   }
 
@@ -396,13 +383,6 @@ CA.prototype.poke2 = function(org, end, val, rad, mode) {
     }
     lastpos = [x_edge, y_edge];
   }
-    console.log("begin")
-  console.log(org,end);
-  console.log([x1,y1], [x1+dx, y1+dy])
-  console.log(dx, dy)
-  console.log(mx, my)
-  console.log(tx, ty)  
-  console.log(unEdge(lastpos, last, 0), unEdge([x1+dx, y1+dy]));
   this._poke2(unEdge(lastpos, last, 0), unEdge([x1+dx, y1+dy]), val, rad, mode);
 }
 
