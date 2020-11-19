@@ -5,6 +5,11 @@ const rules = [
         path: "glsl/rules/hungry_cells.frag"
     },
     {
+        name: "flame",
+        r: 0.3,
+        path: "glsl/rules/flame.frag"
+    },
+    {
         name: "chained cells",
         r: 0.45,
         path: "glsl/rules/chained_cells.frag"
@@ -20,9 +25,34 @@ const rules = [
         path: "glsl/rules/growing_mold.frag"
     },
     {
+        name: "zebra",
+        r: 0.45,
+        path: "glsl/rules/zebra.frag"
+    },
+    {
+        name: "petri dish",
+        r: 0.05,
+        path: "glsl/rules/petri_dish.frag"
+    },
+    {
+        name: "square worms",
+        r: 0.51,
+        path: "glsl/rules/square_worms.frag"
+    },
+    {
+        name: "bacteria",
+        r: 0.5,
+        path: "glsl/rules/bacteria.frag"
+    },
+    {
         name: "mitosis",
         r: 0.37,
         path: "glsl/rules/mitosis.frag"
+    },
+    {
+        name: "patches",
+        r: 0.4,
+        path: "glsl/rules/patches.frag"
     },
     {
         name: "gears",
@@ -98,6 +128,11 @@ const rules = [
         name: "cells and worms 2",
         r: 0.35,
         path: "glsl/rules/cells_and_worms_2.frag"
+    },
+    {
+        name: "worms and cells",
+        r: 0.38,
+        path: "glsl/rules/worms_and_cells.frag"
     },
     {
         name: "amoebas and cancer",
